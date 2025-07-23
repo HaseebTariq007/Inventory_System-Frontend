@@ -1,16 +1,47 @@
 # flutter_inventory_desktop
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+
+## Overview
 A new Flutter project.
 
-## Getting Started
+## Features
+- Cross-platform (Android, iOS, Windows, Web, Linux, macOS)
+- Easy setup & deployment
+- Clean UI and modular codebase
 
-This project is a starting point for a Flutter application.
+## Tech Stack
+- http
+- provider
+- cupertino_icons
 
-A few resources to get you started if this is your first Flutter project:
+## Installation
+```bash
+git clone https://github.com/your-github-username/flutter_inventory_desktop.git
+cd flutter_inventory_desktop
+flutter pub get
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Usage
+```bash
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Project Structure
+- **lib/** – Main application code
+- **test/** – Unit and widget tests
+- **android/**, **ios/** – Platform-specific configurations
+
+## Screenshots
+*(Add your screenshots here)*
+
+## Contributing
+Contributions are welcome! Please fork this repository and submit a pull request.
+
+## License
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## Author
+- **Your Name**
+- Email: your.email@example.com
