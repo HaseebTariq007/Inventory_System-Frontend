@@ -43,5 +43,5 @@ Contributions are welcome! Please fork this repository and submit a pull request
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Author
-- **Your Name**
+- Haseeb Tariq
 - Email: haseebtariq018@gmail.com
