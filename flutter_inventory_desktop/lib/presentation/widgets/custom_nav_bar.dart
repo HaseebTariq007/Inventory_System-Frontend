@@ -1,4 +1,3 @@
-// lib/presentation/widgets/custom_nav_bar.dart
 import 'package:flutter/material.dart';
 
 class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
@@ -8,53 +7,71 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFF55221),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: SafeArea(
-        child: Row(
-          children: [
-            const Text(
-              'Logo',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    return AppBar(
+      backgroundColor: const Color(0xFFF55221),
+      automaticallyImplyLeading: false,
+      title: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(width: 24),
-            _buildNavButton(context, 'Dashboard'),
-            _buildNavButton(context, 'Supplier List'),
-            _buildDropdown('Inventory'),
-            _buildNavButton(context, 'Customer List'),
-            _buildDropdown('Sale'),
-            _buildDropdown('Employee'),
-            _buildNavButton(context, 'Daily Expense'),
-          ],
-        ),
+          ),
+          const SizedBox(width: 30),
+          Expanded(
+            child: Row(
+              children: [
+                _buildNavButton(context, 'Dashboard'),
+                const SizedBox(width: 12),
+                _buildNavButton(context, 'Supplier List'),
+                const SizedBox(width: 12),
+                _buildInventoryDropdown(context),
+                const SizedBox(width: 12),
+                _buildNavButton(context, 'Customer List'),
+                const SizedBox(width: 12),
+                _buildDropdown(context, 'Sale'),
+                const SizedBox(width: 12),
+                _buildDropdown(context, 'Employee'),
+                const SizedBox(width: 12),
+                _buildNavButton(context, 'Daily Expense'),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildNavButton(BuildContext context, String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+    return SizedBox(
+      height: 40,
       child: TextButton(
         onPressed: () {
           if (label == 'Supplier List') {
             Navigator.pushReplacementNamed(context, '/supplier_list');
           } else if (label == 'Customer List') {
             Navigator.pushReplacementNamed(context, '/customer_list');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$label navigation not implemented.')),
+            );
           }
         },
-        child: Text(label, style: const TextStyle(color: Colors.white)),
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+        ),
+        child: Text(label),
       ),
     );
   }
 
-  Widget _buildDropdown(String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+  Widget _buildDropdown(BuildContext context, String label) {
+    return SizedBox(
+      height: 40,
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           dropdownColor: Colors.white,
@@ -63,8 +80,42 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
             DropdownMenuItem(child: Text('Option 1'), value: '1'),
             DropdownMenuItem(child: Text('Option 2'), value: '2'),
           ],
-          onChanged: (value) {},
+          onChanged: (value) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$label -> Option $value selected')),
+            );
+          },
           iconEnabledColor: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInventoryDropdown(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          dropdownColor: Colors.white,
+          hint: const Text('Inventory', style: TextStyle(color: Colors.white)),
+          iconEnabledColor: Colors.white,
+          items: const [
+            DropdownMenuItem(
+              value: 'purchase',
+              child: Text('Purchase Product'),
+            ),
+            DropdownMenuItem(
+              value: 'stock',
+              child: Text('Stock Page'),
+            ),
+          ],
+          onChanged: (value) {
+            if (value == 'purchase') {
+              Navigator.pushReplacementNamed(context, '/purchase');
+            } else if (value == 'stock') {
+              Navigator.pushReplacementNamed(context, '/stock');
+            }
+          },
         ),
       ),
     );
