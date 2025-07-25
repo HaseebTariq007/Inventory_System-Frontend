@@ -7,11 +7,11 @@ import 'presentation/screens/customer_list_screen.dart';
 import 'presentation/screens/purchase_screen.dart';
 import 'presentation/screens/stock_list_screen.dart';
 
-
 // State Providers
 import 'presentation/state/supplier_provider.dart';
 import 'presentation/state/customer_provider.dart';
 import 'presentation/state/purchase_provider.dart';
+import 'presentation/state/stock_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +33,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => PurchaseProvider()..fetchPurchases(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => StockProvider()..fetchStockData(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -53,7 +56,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-//Temporary StockScreen for navigation
+// Temporary StockScreen for navigation (not needed if you use StockListScreen)
 class StockScreen extends StatelessWidget {
   const StockScreen({super.key});
 
