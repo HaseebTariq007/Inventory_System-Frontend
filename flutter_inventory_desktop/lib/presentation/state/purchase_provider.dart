@@ -100,9 +100,126 @@
 
 //New Code
 
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+
+// class PurchaseProvider with ChangeNotifier {
+//   final http.Client client = http.Client();
+
+//   List<Map<String, dynamic>> _purchases = [];
+//   bool _isLoading = false;
+//   String? _error;
+
+//   int _currentPage = 1;
+//   int _limit = 10;
+
+//   List<Map<String, dynamic>> get purchases => _purchases;
+//   bool get isLoading => _isLoading;
+//   String? get error => _error;
+//   int get currentPage => _currentPage;
+//   int get limit => _limit;
+
+//   final String _baseUrl = 'http://localhost:5000/api';
+
+//   // haseeb
+//   Future<void> fetchPurchases() async {
+//     _isLoading = true;
+//     _error = null;
+//     notifyListeners();
+
+//     try {
+//       final response = await client.get(
+//         Uri.parse('$_baseUrl/purchases?page=$_currentPage&limit=$_limit'),
+//       );
+
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['data'] != null && data['data']['data'] is List) {
+//           _purchases = List<Map<String, dynamic>>.from(
+//             data['data']['data'] ?? [],
+//           );
+//         } else {
+//           _purchases = []; // Fallback to empty list if data is invalid
+//         }
+//       } else {
+//         _error = 'Failed to load purchases: ${response.statusCode}';
+//       }
+//     } catch (e) {
+//       _error = 'Error: $e';
+//     }
+
+//     _isLoading = false;
+//     notifyListeners();
+//   }
+
+//   void nextPage() {
+//     _currentPage++;
+//     fetchPurchases();
+//   }
+
+//   void previousPage() {
+//     if (_currentPage > 1) {
+//       _currentPage--;
+//       fetchPurchases();
+//     }
+//   }
+
+//   void changeLimit(int newLimit) {
+//     _limit = newLimit;
+//     _currentPage = 1;
+//     fetchPurchases();
+//   }
+
+//   void resetPage() {
+//     _currentPage = 1;
+//     fetchPurchases();
+//   }
+
+//   Future<void> deletePurchase(int id) async {
+//     try {
+//       final response = await client.delete(
+//         Uri.parse('$_baseUrl/purchases/$id'),
+//       );
+//       if (response.statusCode == 200) {
+//         fetchPurchases();
+//       } else {
+//         _error = 'Failed to delete: ${response.statusCode}';
+//         notifyListeners();
+//       }
+//     } catch (e) {
+//       _error = 'Error: $e';
+//       notifyListeners();
+//     }
+//   }
+
+//   Future<void> submitPurchase(Map<String, dynamic> data) async {
+//     try {
+//       final response = await client.post(
+//         Uri.parse('$_baseUrl/purchases'),
+//         headers: {'Content-Type': 'application/json'},
+//         body: jsonEncode(data),
+//       );
+
+//       if (response.statusCode == 201 || response.statusCode == 200) {
+//         fetchPurchases(); // Refresh data after successful insert
+//       } else {
+//         _error = 'Failed to submit purchase: ${response.statusCode}';
+//         notifyListeners();
+//       }
+//     } catch (e) {
+//       _error = 'Error: $e';
+//       notifyListeners();
+//     }
+//   }
+// }
+
+// new haseeb updated code
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+// import '../services/api_service.dart';
 
 class PurchaseProvider with ChangeNotifier {
   final http.Client client = http.Client();
@@ -122,7 +239,6 @@ class PurchaseProvider with ChangeNotifier {
 
   final String _baseUrl = 'http://localhost:5000/api';
 
-  // haseeb
   Future<void> fetchPurchases() async {
     _isLoading = true;
     _error = null;
@@ -140,7 +256,7 @@ class PurchaseProvider with ChangeNotifier {
             data['data']['data'] ?? [],
           );
         } else {
-          _purchases = []; // Fallback to empty list if data is invalid
+          _purchases = [];
         }
       } else {
         _error = 'Failed to load purchases: ${response.statusCode}';
@@ -176,23 +292,6 @@ class PurchaseProvider with ChangeNotifier {
     fetchPurchases();
   }
 
-  Future<void> deletePurchase(int id) async {
-    try {
-      final response = await client.delete(
-        Uri.parse('$_baseUrl/purchases/$id'),
-      );
-      if (response.statusCode == 200) {
-        fetchPurchases();
-      } else {
-        _error = 'Failed to delete: ${response.statusCode}';
-        notifyListeners();
-      }
-    } catch (e) {
-      _error = 'Error: $e';
-      notifyListeners();
-    }
-  }
-
   Future<void> submitPurchase(Map<String, dynamic> data) async {
     try {
       final response = await client.post(
@@ -202,7 +301,7 @@ class PurchaseProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        fetchPurchases(); // Refresh data after successful insert
+        fetchPurchases();
       } else {
         _error = 'Failed to submit purchase: ${response.statusCode}';
         notifyListeners();
@@ -212,4 +311,14 @@ class PurchaseProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Future<void> updatePurchase(int purchaseId, Map<String, dynamic> data) async {
+  //   try {
+  //     await ApiService.updatePurchase(purchaseId, data);
+  //     fetchPurchases();
+  //   } catch (e) {
+  //     _error = 'Error updating purchase: $e';
+  //     notifyListeners();
+  //   }
+  // }
 }

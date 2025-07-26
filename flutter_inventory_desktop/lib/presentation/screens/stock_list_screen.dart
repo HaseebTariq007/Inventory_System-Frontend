@@ -662,6 +662,931 @@
 
 //New Code
 
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+// import '../widgets/custom_nav_bar.dart';
+// import '../state/stock_provider.dart';
+
+// class StockListScreen extends StatefulWidget {
+//   const StockListScreen({Key? key}) : super(key: key);
+
+//   @override
+//   _StockListScreenState createState() => _StockListScreenState();
+// }
+
+// class _StockListScreenState extends State<StockListScreen> {
+//   String? selectedItem;
+//   String? selectedType;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     Provider.of<StockProvider>(context, listen: false).fetchStockData();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final stockProvider = Provider.of<StockProvider>(context);
+
+//     final filteredStock = stockProvider.stocks.where((stock) {
+//       final matchesItem = selectedItem == null || stock['item_name'] == selectedItem;
+//       final matchesType = selectedType == null || stock['item_type'] == selectedType;
+//       return matchesItem && matchesType;
+//     }).toList();
+
+//     final paginatedStock = filteredStock.skip((stockProvider.currentPage - 1) * stockProvider.limit).take(stockProvider.limit).toList();
+
+//     final itemNames = stockProvider.stocks.map((s) => s['item_name'] as String).toSet().toList();
+//     final itemTypes = selectedItem == null
+//         ? []
+//         : stockProvider.stocks
+//             .where((s) => s['item_name'] == selectedItem)
+//             .map((s) => s['item_type'] as String)
+//             .toSet()
+//             .toList();
+
+//     return Scaffold(
+//       appBar: const CustomNavBar(title: 'Stock List'),
+//       backgroundColor: const Color(0xFFFAF9FB),
+//       body: Column(
+//         children: [
+//           /// Filters
+//           Container(
+//             width: double.infinity,
+//             margin: const EdgeInsets.all(16),
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//               color: Colors.white,
+//               boxShadow: [
+//                 BoxShadow(
+//                   color: Colors.black.withOpacity(0.05),
+//                   blurRadius: 12,
+//                   spreadRadius: 2,
+//                   offset: const Offset(0, 4),
+//                 ),
+//               ],
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Row(
+//               children: [
+//                 SizedBox(
+//                   width: 180,
+//                   child: DropdownButtonFormField<String>(
+//                     value: selectedItem,
+//                     hint: const Text('Select Item'),
+//                     decoration: _dropdownDecoration(),
+//                     items: itemNames.map((item) {
+//                       return DropdownMenuItem<String>(
+//                         value: item,
+//                         child: Text(item),
+//                       );
+//                     }).toList(),
+//                     onChanged: (value) {
+//                       setState(() {
+//                         selectedItem = value;
+//                         selectedType = null;
+//                       });
+//                     },
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 if (selectedItem != null)
+//                   SizedBox(
+//                     width: 180,
+//                     child: DropdownButtonFormField<String>(
+//                       value: selectedType,
+//                       hint: const Text('Select Type'),
+//                       decoration: _dropdownDecoration(),
+//                       items: itemTypes.map((type) {
+//                         return DropdownMenuItem<String>(
+//                           value: type,
+//                           child: Text(type),
+//                         );
+//                       }).toList(),
+//                       onChanged: (value) {
+//                         setState(() => selectedType = value);
+//                       },
+//                     ),
+//                   ),
+//                 const SizedBox(width: 12),
+//                 const Icon(Icons.filter_list),
+//                 const SizedBox(width: 4),
+//                 const Text('Filter'),
+//               ],
+//             ),
+//           ),
+
+//           /// Table
+//           Expanded(
+//             child: Center(
+//               child: Container(
+//                 width: 1350,
+//                 margin: const EdgeInsets.symmetric(vertical: 16),
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: Colors.black.withOpacity(0.08),
+//                       blurRadius: 10,
+//                       spreadRadius: 3,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: stockProvider.isLoading
+//                     ? const Center(child: CircularProgressIndicator())
+//                     : stockProvider.error != null
+//                         ? Center(child: Text(stockProvider.error!))
+//                         : DataTable(
+//                             columns: const [
+//                               DataColumn(label: Text('Item Name')),
+//                               DataColumn(label: Text('Quantity')),
+//                               DataColumn(label: Text('Total Amount')),
+//                               DataColumn(label: Text('Unit Price')),
+//                             ],
+//                             rows: paginatedStock.map((stock) {
+//                               final unitPrice = stock['quantity'] != 0
+//                                   ? (stock['total_amount'] / stock['quantity']).toStringAsFixed(2)
+//                                   : '0.00';
+//                               return DataRow(cells: [
+//                                 DataCell(Text(stock['item_name'].toString())),
+//                                 DataCell(Text(stock['quantity'].toString())),
+//                                 DataCell(Text(stock['total_amount'].toString())),
+//                                 DataCell(Text(unitPrice)),
+//                               ]);
+//                             }).toList(),
+//                           ),
+//               ),
+//             ),
+//           ),
+
+//           /// Pagination
+//           Padding(
+//             padding: const EdgeInsets.all(40.0),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Row(
+//                   children: [
+//                     DropdownButton<int>(
+//                       value: stockProvider.limit,
+//                       items: const [
+//                         DropdownMenuItem(value: 10, child: Text('10')),
+//                         DropdownMenuItem(value: 25, child: Text('25')),
+//                         DropdownMenuItem(value: 50, child: Text('50')),
+//                       ],
+//                       onChanged: (int? newValue) {
+//                         if (newValue != null) {
+//                           stockProvider.changeLimit(newValue);
+//                         }
+//                       },
+//                     ),
+//                     const SizedBox(width: 20),
+//                     ElevatedButton(
+//                       onPressed: stockProvider.currentPage > 1
+//                           ? () => stockProvider.previousPage()
+//                           : null,
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: const Color(0xFFF55221),
+//                         foregroundColor: Colors.white,
+//                       ),
+//                       child: const Text('Previous'),
+//                     ),
+//                   ],
+//                 ),
+//                 Text('Page ${stockProvider.currentPage}'),
+//                 ElevatedButton(
+//                   onPressed: () => stockProvider.nextPage(),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: const Color(0xFFF55221),
+//                     foregroundColor: Colors.white,
+//                   ),
+//                   child: const Text('Next'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   InputDecoration _dropdownDecoration() {
+//     return InputDecoration(
+//       filled: true,
+//       fillColor: Colors.grey.shade100,
+//       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+//       border: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(10),
+//         borderSide: BorderSide.none,
+//       ),
+//     );
+//   }
+// }
+
+// haseeeb code
+
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+// import '../widgets/custom_nav_bar.dart';
+// import '../state/stock_provider.dart';
+
+// class StockListScreen extends StatefulWidget {
+//   const StockListScreen({Key? key}) : super(key: key);
+
+//   @override
+//   _StockListScreenState createState() => _StockListScreenState();
+// }
+
+// class _StockListScreenState extends State<StockListScreen> {
+//   String? selectedItem;
+//   String? selectedType;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     Provider.of<StockProvider>(context, listen: false).fetchStockData();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final stockProvider = Provider.of<StockProvider>(context);
+
+//     final filteredStock =
+//         stockProvider.stocks.where((stock) {
+//           final matchesItem =
+//               selectedItem == null || stock['item']?['name'] == selectedItem;
+//           final matchesType =
+//               selectedType == null || stock['item']?['type'] == selectedType;
+//           return matchesItem && matchesType;
+//         }).toList();
+
+//     final paginatedStock =
+//         filteredStock
+//             .skip((stockProvider.currentPage - 1) * stockProvider.limit)
+//             .take(stockProvider.limit)
+//             .toList();
+
+//     final itemNames =
+//         stockProvider.stocks
+//             .map((s) => s['item']?['name'] as String)
+//             .toSet()
+//             .toList();
+//     final itemTypes =
+//         selectedItem == null
+//             ? []
+//             : stockProvider.stocks
+//                 .where((s) => s['item']?['name'] == selectedItem)
+//                 .map((s) => s['item']?['type'] as String)
+//                 .toSet()
+//                 .toList();
+
+//     return Scaffold(
+//       appBar: const CustomNavBar(title: 'Stock List'),
+//       backgroundColor: const Color(0xFFFAF9FB),
+//       body: Column(
+//         children: [
+//           /// Filters
+//           Container(
+//             width: double.infinity,
+//             margin: const EdgeInsets.all(16),
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//               color: Colors.white,
+//               boxShadow: [
+//                 BoxShadow(
+//                   color: Colors.black.withOpacity(0.05),
+//                   blurRadius: 12,
+//                   spreadRadius: 2,
+//                   offset: const Offset(0, 4),
+//                 ),
+//               ],
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Row(
+//               children: [
+//                 SizedBox(
+//                   width: 180,
+//                   child: DropdownButtonFormField<String>(
+//                     value: selectedItem,
+//                     hint: const Text('Select Item'),
+//                     decoration: _dropdownDecoration(),
+//                     items:
+//                         itemNames.map((item) {
+//                           return DropdownMenuItem<String>(
+//                             value: item,
+//                             child: Text(item),
+//                           );
+//                         }).toList(),
+//                     onChanged: (value) {
+//                       setState(() {
+//                         selectedItem = value;
+//                         selectedType = null;
+//                       });
+//                     },
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 if (selectedItem != null)
+//                   SizedBox(
+//                     width: 180,
+//                     child: DropdownButtonFormField<String>(
+//                       value: selectedType,
+//                       hint: const Text('Select Type'),
+//                       decoration: _dropdownDecoration(),
+//                       items:
+//                           itemTypes.map((type) {
+//                             return DropdownMenuItem<String>(
+//                               value: type,
+//                               child: Text(type),
+//                             );
+//                           }).toList(),
+//                       onChanged: (value) {
+//                         setState(() => selectedType = value);
+//                       },
+//                     ),
+//                   ),
+//                 const SizedBox(width: 12),
+//                 const Icon(Icons.filter_list),
+//                 const SizedBox(width: 4),
+//                 const Text('Filter'),
+//               ],
+//             ),
+//           ),
+
+//           /// Table
+//           Expanded(
+//             child: Center(
+//               child: Container(
+//                 margin: const EdgeInsets.symmetric(vertical: 16),
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: Colors.black.withOpacity(0.08),
+//                       blurRadius: 10,
+//                       spreadRadius: 3,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child:
+//                     stockProvider.isLoading
+//                         ? const Center(child: CircularProgressIndicator())
+//                         : stockProvider.error != null
+//                         ? Center(child: Text(stockProvider.error!))
+//                         : SingleChildScrollView(
+//                           scrollDirection: Axis.horizontal,
+//                           child: SingleChildScrollView(
+//                             child: DataTable(
+//                               headingRowColor: MaterialStateColor.resolveWith(
+//                                 (states) =>
+//                                     Colors
+//                                         .grey
+//                                         .shade200, // Shaded color for headers
+//                               ),
+//                               columnSpacing:
+//                                   30.0, // Even spacing between columns
+//                               columns: [
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width:
+//                                         300, // Adjustable width for each column
+//                                     child: Text(
+//                                       'Item Name',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 200,
+//                                     child: Text(
+//                                       'Type',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 150,
+//                                     child: Text(
+//                                       'Quantity',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 200,
+//                                     child: Text(
+//                                       'Unit Price',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                               ],
+//                               rows:
+//                                   paginatedStock.map((stock) {
+//                                     final quantity = stock['quantity'] ?? 0;
+//                                     final unitPrice =
+//                                         quantity != 0
+//                                             ? ((stock['unit_price'] ?? 0)
+//                                                     .toDouble())
+//                                                 .toStringAsFixed(2)
+//                                             : '0.00';
+//                                     return DataRow(
+//                                       cells: [
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 300,
+//                                             child: Text(
+//                                               stock['item']?['name'] ?? '',
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 200,
+//                                             child: Text(
+//                                               stock['item']?['type'] ?? '',
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 150,
+//                                             child: Text(quantity.toString()),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 200,
+//                                             child: Text(unitPrice),
+//                                           ),
+//                                         ),
+//                                       ],
+//                                     );
+//                                   }).toList(),
+//                             ),
+//                           ),
+//                         ),
+//               ),
+//             ),
+//           ),
+
+//           /// Pagination
+//           Padding(
+//             padding: const EdgeInsets.all(40.0),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Row(
+//                   children: [
+//                     DropdownButton<int>(
+//                       value: stockProvider.limit,
+//                       items: const [
+//                         DropdownMenuItem(value: 10, child: Text('10')),
+//                         DropdownMenuItem(value: 25, child: Text('25')),
+//                         DropdownMenuItem(value: 50, child: Text('50')),
+//                       ],
+//                       onChanged: (int? newValue) {
+//                         if (newValue != null) {
+//                           stockProvider.changeLimit(newValue);
+//                         }
+//                       },
+//                     ),
+//                     const SizedBox(width: 20),
+//                     ElevatedButton(
+//                       onPressed:
+//                           stockProvider.currentPage > 1
+//                               ? () => stockProvider.previousPage()
+//                               : null,
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: const Color(0xFFF55221),
+//                         foregroundColor: Colors.white,
+//                       ),
+//                       child: const Text('Previous'),
+//                     ),
+//                   ],
+//                 ),
+//                 Text('Page ${stockProvider.currentPage}'),
+//                 ElevatedButton(
+//                   onPressed: () => stockProvider.nextPage(),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: const Color(0xFFF55221),
+//                     foregroundColor: Colors.white,
+//                   ),
+//                   child: const Text('Next'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   InputDecoration _dropdownDecoration() {
+//     return InputDecoration(
+//       filled: true,
+//       fillColor: Colors.grey.shade100,
+//       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+//       border: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(10),
+//         borderSide: BorderSide.none,
+//       ),
+//     );
+//   }
+// }
+
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+// import '../widgets/custom_nav_bar.dart';
+// import '../state/stock_provider.dart';
+
+// class StockListScreen extends StatefulWidget {
+//   const StockListScreen({Key? key}) : super(key: key);
+
+//   @override
+//   _StockListScreenState createState() => _StockListScreenState();
+// }
+
+// class _StockListScreenState extends State<StockListScreen> {
+//   String? selectedItem;
+//   String? selectedType;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     // Ensure fetchStockData is called after the widget is fully initialized
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       Provider.of<StockProvider>(context, listen: false).fetchStockData();
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final stockProvider = Provider.of<StockProvider>(context);
+
+//     final filteredStock =
+//         stockProvider.stocks.where((stock) {
+//           final matchesItem =
+//               selectedItem == null || stock['item']?['name'] == selectedItem;
+//           final matchesType =
+//               selectedType == null || stock['item']?['type'] == selectedType;
+//           return matchesItem && matchesType;
+//         }).toList();
+
+//     final paginatedStock =
+//         filteredStock
+//             .skip((stockProvider.currentPage - 1) * stockProvider.limit)
+//             .take(stockProvider.limit)
+//             .toList();
+
+//     final itemNames =
+//         stockProvider.stocks
+//             .map((s) => s['item']?['name'] as String?)
+//             .where((name) => name != null)
+//             .cast<String>()
+//             .toSet()
+//             .toList(); // Ensure uniqueness with toSet()
+//     final itemTypes =
+//         selectedItem == null
+//             ? []
+//             : stockProvider.stocks
+//                 .where((s) => s['item']?['name'] == selectedItem)
+//                 .map((s) => s['item']?['type'] as String?)
+//                 .where((type) => type != null)
+//                 .cast<String>()
+//                 .toSet()
+//                 .toList();
+
+//     return Scaffold(
+//       appBar: const CustomNavBar(title: 'Stock List'),
+//       backgroundColor: const Color(0xFFFAF9FB),
+//       body: Column(
+//         children: [
+//           /// Filters
+//           Container(
+//             width: double.infinity,
+//             margin: const EdgeInsets.all(16),
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//               color: Colors.white,
+//               boxShadow: [
+//                 BoxShadow(
+//                   color: Colors.black.withOpacity(0.05),
+//                   blurRadius: 12,
+//                   spreadRadius: 2,
+//                   offset: const Offset(0, 4),
+//                 ),
+//               ],
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Row(
+//               children: [
+//                 SizedBox(
+//                   width: 180,
+//                   child: DropdownButtonFormField<String>(
+//                     value:
+//                         itemNames.contains(selectedItem) ? selectedItem : null,
+//                     hint: const Text('Select Item'),
+//                     decoration: _dropdownDecoration(),
+//                     items:
+//                         itemNames.map((item) {
+//                           return DropdownMenuItem<String>(
+//                             value: item,
+//                             child: Text(item),
+//                           );
+//                         }).toList(),
+//                     onChanged: (value) {
+//                       setState(() {
+//                         selectedItem = value;
+//                         selectedType = null;
+//                         Provider.of<StockProvider>(
+//                           context,
+//                           listen: false,
+//                         ).applyFilters(item: value, type: null);
+//                       });
+//                     },
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 if (selectedItem != null)
+//                   SizedBox(
+//                     width: 180,
+//                     child: DropdownButtonFormField<String>(
+//                       value:
+//                           itemTypes.contains(selectedType)
+//                               ? selectedType
+//                               : null,
+//                       hint: const Text('Select Type'),
+//                       decoration: _dropdownDecoration(),
+//                       items:
+//                           itemTypes.map((type) {
+//                             return DropdownMenuItem<String>(
+//                               value: type,
+//                               child: Text(type),
+//                             );
+//                           }).toList(),
+//                       onChanged: (value) {
+//                         setState(() {
+//                           selectedType = value;
+//                           Provider.of<StockProvider>(
+//                             context,
+//                             listen: false,
+//                           ).applyFilters(item: selectedItem, type: value);
+//                         });
+//                       },
+//                     ),
+//                   ),
+//                 const SizedBox(width: 12),
+//                 ElevatedButton(
+//                   onPressed: () {
+//                     setState(() {
+//                       selectedItem = null;
+//                       selectedType = null;
+//                       Provider.of<StockProvider>(
+//                         context,
+//                         listen: false,
+//                       ).clearFilters();
+//                     });
+//                   },
+//                   style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+//                   child: const Text('Reset'),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 const Icon(Icons.filter_list),
+//                 const SizedBox(width: 4),
+//                 const Text('Filter'),
+//               ],
+//             ),
+//           ),
+
+//           /// Table
+//           Expanded(
+//             child: Center(
+//               child: Container(
+//                 margin: const EdgeInsets.symmetric(vertical: 16),
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: Colors.black.withOpacity(0.08),
+//                       blurRadius: 10,
+//                       spreadRadius: 3,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child:
+//                     stockProvider.isLoading
+//                         ? const Center(child: CircularProgressIndicator())
+//                         : stockProvider.error != null
+//                         ? Center(child: Text(stockProvider.error!))
+//                         : SingleChildScrollView(
+//                           scrollDirection: Axis.horizontal,
+//                           child: SingleChildScrollView(
+//                             child: DataTable(
+//                               headingRowColor: MaterialStateColor.resolveWith(
+//                                 (states) => Colors.grey.shade200,
+//                               ),
+//                               columnSpacing: 30.0,
+//                               columns: [
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 300,
+//                                     child: Text(
+//                                       'Item Name',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 200,
+//                                     child: Text(
+//                                       'Type',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 150,
+//                                     child: Text(
+//                                       'Quantity',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 200,
+//                                     child: Text(
+//                                       'Unit Price',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                               ],
+//                               rows:
+//                                   paginatedStock.map((stock) {
+//                                     final quantity = stock['quantity'] ?? 0;
+//                                     final unitPrice =
+//                                         quantity != 0
+//                                             ? ((stock['unit_price'] ?? 0)
+//                                                     .toDouble())
+//                                                 .toStringAsFixed(2)
+//                                             : '0.00';
+//                                     return DataRow(
+//                                       cells: [
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 300,
+//                                             child: Text(
+//                                               stock['item']?['name'] ?? '',
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 200,
+//                                             child: Text(
+//                                               stock['item']?['type'] ?? '',
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 150,
+//                                             child: Text(
+//                                               quantity.toString(),
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 200,
+//                                             child: Text(
+//                                               unitPrice,
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                       ],
+//                                     );
+//                                   }).toList(),
+//                             ),
+//                           ),
+//                         ),
+//               ),
+//             ),
+//           ),
+
+//           /// Pagination
+//           Padding(
+//             padding: const EdgeInsets.all(40.0),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Row(
+//                   children: [
+//                     DropdownButton<int>(
+//                       value: stockProvider.limit,
+//                       items: const [
+//                         DropdownMenuItem(value: 10, child: Text('10')),
+//                         DropdownMenuItem(value: 25, child: Text('25')),
+//                         DropdownMenuItem(value: 50, child: Text('50')),
+//                       ],
+//                       onChanged: (int? newValue) {
+//                         if (newValue != null) {
+//                           stockProvider.changeLimit(newValue);
+//                         }
+//                       },
+//                     ),
+//                     const SizedBox(width: 20),
+//                     ElevatedButton(
+//                       onPressed:
+//                           stockProvider.currentPage > 1
+//                               ? () => stockProvider.previousPage()
+//                               : null,
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: const Color(0xFFF55221),
+//                         foregroundColor: Colors.white,
+//                       ),
+//                       child: const Text('Previous'),
+//                     ),
+//                   ],
+//                 ),
+//                 Text('Page ${stockProvider.currentPage}'),
+//                 ElevatedButton(
+//                   onPressed: () => stockProvider.nextPage(),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: const Color(0xFFF55221),
+//                     foregroundColor: Colors.white,
+//                   ),
+//                   child: const Text('Next'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   InputDecoration _dropdownDecoration() {
+//     return InputDecoration(
+//       filled: true,
+//       fillColor: Colors.grey.shade100,
+//       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+//       border: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(10),
+//         borderSide: BorderSide.none,
+//       ),
+//     );
+//   }
+// }
+
+// old above is working fine but few issues this is a fix one below
+
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/custom_nav_bar.dart';
@@ -675,34 +1600,44 @@ class StockListScreen extends StatefulWidget {
 }
 
 class _StockListScreenState extends State<StockListScreen> {
-  String? selectedItem;
-  String? selectedType;
+  final TextEditingController _searchController = TextEditingController();
+  final Debouncer _debouncer = Debouncer(milliseconds: 300);
 
   @override
   void initState() {
     super.initState();
-    Provider.of<StockProvider>(context, listen: false).fetchStockData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<StockProvider>(context, listen: false).fetchStockData();
+    });
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _debouncer.run(() {
+      final searchText = _searchController.text.trim();
+      Provider.of<StockProvider>(
+        context,
+        listen: false,
+      ).fetchStockData(query: searchText.isEmpty ? null : searchText);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _debouncer.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final stockProvider = Provider.of<StockProvider>(context);
 
-    final filteredStock = stockProvider.stocks.where((stock) {
-      final matchesItem = selectedItem == null || stock['item_name'] == selectedItem;
-      final matchesType = selectedType == null || stock['item_type'] == selectedType;
-      return matchesItem && matchesType;
-    }).toList();
-
-    final paginatedStock = filteredStock.skip((stockProvider.currentPage - 1) * stockProvider.limit).take(stockProvider.limit).toList();
-
-    final itemNames = stockProvider.stocks.map((s) => s['item_name'] as String).toSet().toList();
-    final itemTypes = selectedItem == null
-        ? []
-        : stockProvider.stocks
-            .where((s) => s['item_name'] == selectedItem)
-            .map((s) => s['item_type'] as String)
-            .toSet()
+    final paginatedStock =
+        stockProvider.stocks
+            .skip((stockProvider.currentPage - 1) * stockProvider.limit)
+            .take(stockProvider.limit)
             .toList();
 
     return Scaffold(
@@ -710,7 +1645,13 @@ class _StockListScreenState extends State<StockListScreen> {
       backgroundColor: const Color(0xFFFAF9FB),
       body: Column(
         children: [
-          /// Filters
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: const Text(
+              'Stock',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+          ),
           Container(
             width: double.infinity,
             margin: const EdgeInsets.all(16),
@@ -730,44 +1671,39 @@ class _StockListScreenState extends State<StockListScreen> {
             child: Row(
               children: [
                 SizedBox(
-                  width: 180,
-                  child: DropdownButtonFormField<String>(
-                    value: selectedItem,
-                    hint: const Text('Select Item'),
-                    decoration: _dropdownDecoration(),
-                    items: itemNames.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: Text(item),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedItem = value;
-                        selectedType = null;
-                      });
-                    },
+                  width: 150,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      labelText: 'Search Item',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                if (selectedItem != null)
-                  SizedBox(
-                    width: 180,
-                    child: DropdownButtonFormField<String>(
-                      value: selectedType,
-                      hint: const Text('Select Type'),
-                      decoration: _dropdownDecoration(),
-                      items: itemTypes.map((type) {
-                        return DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedType = value);
-                      },
-                    ),
-                  ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchController.clear();
+                      Provider.of<StockProvider>(
+                        context,
+                        listen: false,
+                      ).fetchStockData();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                  child: const Text('Reset'),
+                ),
                 const SizedBox(width: 12),
                 const Icon(Icons.filter_list),
                 const SizedBox(width: 4),
@@ -775,12 +1711,9 @@ class _StockListScreenState extends State<StockListScreen> {
               ],
             ),
           ),
-
-          /// Table
           Expanded(
             child: Center(
               child: Container(
-                width: 1350,
                 margin: const EdgeInsets.symmetric(vertical: 16),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -795,34 +1728,129 @@ class _StockListScreenState extends State<StockListScreen> {
                   ],
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: stockProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : stockProvider.error != null
+                child:
+                    stockProvider.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : stockProvider.error != null
                         ? Center(child: Text(stockProvider.error!))
-                        : DataTable(
-                            columns: const [
-                              DataColumn(label: Text('Item Name')),
-                              DataColumn(label: Text('Quantity')),
-                              DataColumn(label: Text('Total Amount')),
-                              DataColumn(label: Text('Unit Price')),
-                            ],
-                            rows: paginatedStock.map((stock) {
-                              final unitPrice = stock['quantity'] != 0
-                                  ? (stock['total_amount'] / stock['quantity']).toStringAsFixed(2)
-                                  : '0.00';
-                              return DataRow(cells: [
-                                DataCell(Text(stock['item_name'].toString())),
-                                DataCell(Text(stock['quantity'].toString())),
-                                DataCell(Text(stock['total_amount'].toString())),
-                                DataCell(Text(unitPrice)),
-                              ]);
-                            }).toList(),
+                        : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SingleChildScrollView(
+                            child: DataTable(
+                              headingRowColor: MaterialStateColor.resolveWith(
+                                (states) => Colors.grey.shade200,
+                              ),
+                              columnSpacing: 30.0,
+                              columns: [
+                                DataColumn(
+                                  label: SizedBox(
+                                    width: 300,
+                                    child: Text(
+                                      'Item Name',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: SizedBox(
+                                    width: 200,
+                                    child: Text(
+                                      'Type',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: SizedBox(
+                                    width: 150,
+                                    child: Text(
+                                      'Quantity',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: SizedBox(
+                                    width: 200,
+                                    child: Text(
+                                      'Unit Price',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              rows:
+                                  paginatedStock.map((stock) {
+                                    final quantity = stock['quantity'] ?? 0;
+                                    final unitPrice =
+                                        quantity != 0
+                                            ? ((stock['unit_price'] ?? 0)
+                                                    .toDouble())
+                                                .toStringAsFixed(2)
+                                            : '0.00';
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          SizedBox(
+                                            width: 300,
+                                            child: Text(
+                                              stock['item']?['name'] ?? '',
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          SizedBox(
+                                            width: 200,
+                                            child: Text(
+                                              stock['item']?['type'] ?? '',
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          SizedBox(
+                                            width: 150,
+                                            child: Text(
+                                              quantity.toString(),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          SizedBox(
+                                            width: 200,
+                                            child: Text(
+                                              unitPrice,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                            ),
                           ),
+                        ),
               ),
             ),
           ),
-
-          /// Pagination
           Padding(
             padding: const EdgeInsets.all(40.0),
             child: Row(
@@ -845,9 +1873,10 @@ class _StockListScreenState extends State<StockListScreen> {
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
-                      onPressed: stockProvider.currentPage > 1
-                          ? () => stockProvider.previousPage()
-                          : null,
+                      onPressed:
+                          stockProvider.currentPage > 1
+                              ? () => stockProvider.previousPage()
+                              : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF55221),
                         foregroundColor: Colors.white,
@@ -872,17 +1901,27 @@ class _StockListScreenState extends State<StockListScreen> {
       ),
     );
   }
-
-  InputDecoration _dropdownDecoration() {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.grey.shade100,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide.none,
-      ),
-    );
-  }
 }
 
+// Debouncer class to limit API calls
+class Debouncer {
+  final int milliseconds;
+  VoidCallback? _action;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _action = action;
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), () {
+      if (_action != null) {
+        _action!();
+      }
+    });
+  }
+
+  void dispose() {
+    _timer?.cancel();
+  }
+}

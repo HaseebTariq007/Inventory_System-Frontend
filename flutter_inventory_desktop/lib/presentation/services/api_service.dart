@@ -174,13 +174,32 @@ class ApiService {
   static const baseUrl = 'http://localhost:5000/api';
 
   // Fetch items as List<Map<String, dynamic>>
+  // static Future<List<Map<String, dynamic>>> fetchItems() async {
+  //   final response = await http.get(Uri.parse('$baseUrl/items'));
+  //   if (response.statusCode == 200) {
+  //     List data = json.decode(response.body);
+  //     return List<Map<String, dynamic>>.from(data);
+  //   } else {
+  //     throw Exception('Failed to load items');
+  //   }
+  // }
+
   static Future<List<Map<String, dynamic>>> fetchItems() async {
-    final response = await http.get(Uri.parse('$baseUrl/items'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/items?page=1&limit=1000'),
+    );
     if (response.statusCode == 200) {
-      List data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data);
+      final decoded = json.decode(response.body);
+      // Extract the actual list of items inside data.data
+      if (decoded is Map &&
+          decoded['data'] != null &&
+          decoded['data']['data'] is List) {
+        return List<Map<String, dynamic>>.from(decoded['data']['data']);
+      } else {
+        return [];
+      }
     } else {
-      throw Exception('Failed to load items');
+      throw Exception('Failed to load items: ${response.statusCode}');
     }
   }
 
@@ -249,8 +268,24 @@ class ApiService {
   }
 
   // Update a purchase
+  // static Future<void> updatePurchase(
+  //   int purchaseId,
+  //   Map<String, dynamic> data,
+  // ) async {
+  //   final response = await http.put(
+  //     Uri.parse('$baseUrl/purchases/$purchaseId'),
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: json.encode(data),
+  //   );
+
+  //   if (response.statusCode != 200) {
+  //     throw Exception('Failed to update purchase');
+  //   }
+  // }
+
+  // Update purchase status (Mark as Paid) haseeb
   static Future<void> updatePurchase(
-    int purchaseId,
+    String purchaseId,
     Map<String, dynamic> data,
   ) async {
     final response = await http.put(
@@ -260,7 +295,7 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to update purchase');
+      throw Exception('Failed to update purchase: ${response.body}');
     }
   }
 
