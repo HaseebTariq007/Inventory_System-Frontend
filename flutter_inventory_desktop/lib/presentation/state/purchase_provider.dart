@@ -1,4 +1,4 @@
-// // 
+// //
 
 // //New Code
 
@@ -122,6 +122,7 @@ class PurchaseProvider with ChangeNotifier {
 
   final String _baseUrl = 'http://localhost:5000/api';
 
+  // haseeb
   Future<void> fetchPurchases() async {
     _isLoading = true;
     _error = null;
@@ -134,7 +135,13 @@ class PurchaseProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _purchases = List<Map<String, dynamic>>.from(data['data'] ?? []);
+        if (data['data'] != null && data['data']['data'] is List) {
+          _purchases = List<Map<String, dynamic>>.from(
+            data['data']['data'] ?? [],
+          );
+        } else {
+          _purchases = []; // Fallback to empty list if data is invalid
+        }
       } else {
         _error = 'Failed to load purchases: ${response.statusCode}';
       }
@@ -206,4 +213,3 @@ class PurchaseProvider with ChangeNotifier {
     }
   }
 }
-

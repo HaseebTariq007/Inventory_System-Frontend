@@ -184,15 +184,37 @@ class ApiService {
     }
   }
 
-  // Fetch suppliers
   static Future<List<Map<String, dynamic>>> fetchSuppliers() async {
-    final response = await http.get(Uri.parse('$baseUrl/suppliers'));
-    if (response.statusCode == 200) {
-      List data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data);
-    } else {
-      throw Exception('Failed to load suppliers');
+    final List<Map<String, dynamic>> allSuppliers = [];
+    int page = 1;
+    const int limit = 10; // Match backend's per_page default
+
+    while (true) {
+      final response = await http.get(
+        Uri.parse('$baseUrl/suppliers?page=$page&limit=$limit'),
+      );
+      print('Raw response from /suppliers (page $page): ${response.body}');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is Map &&
+            data.containsKey('data') &&
+            data['data'] is Map &&
+            data['data'].containsKey('data')) {
+          final pageData = data['data']['data'] as List<dynamic>? ?? [];
+          allSuppliers.addAll(pageData.cast<Map<String, dynamic>>());
+          final totalPages = data['data']['pages'] as int? ?? 1;
+          if (page >= totalPages) break;
+          page++;
+        } else {
+          throw Exception('Unexpected response format: $data');
+        }
+      } else {
+        throw Exception(
+          'Failed to load suppliers: ${response.statusCode} - ${response.body}',
+        );
+      }
     }
+    return allSuppliers;
   }
 
   // Submit a new purchase
@@ -209,7 +231,10 @@ class ApiService {
   }
 
   // Fetch paginated purchases
-  static Future<List<Map<String, dynamic>>> fetchPurchases({int page = 1, int limit = 10}) async {
+  static Future<List<Map<String, dynamic>>> fetchPurchases({
+    int page = 1,
+    int limit = 10,
+  }) async {
     final response = await http.get(
       Uri.parse('$baseUrl/purchases?page=$page&limit=$limit'),
     );
@@ -224,7 +249,10 @@ class ApiService {
   }
 
   // Update a purchase
-  static Future<void> updatePurchase(int purchaseId, Map<String, dynamic> data) async {
+  static Future<void> updatePurchase(
+    int purchaseId,
+    Map<String, dynamic> data,
+  ) async {
     final response = await http.put(
       Uri.parse('$baseUrl/purchases/$purchaseId'),
       headers: {'Content-Type': 'application/json'},

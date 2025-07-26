@@ -102,7 +102,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
               try {
                 final response = await provider.client.put(
                   Uri.parse(
-                    'http://localhost:5000/api/customers/${customer['id']}',
+                    'http://localhost:5000/api/customers/${customer['customer_id']}',
                   ),
                   headers: {'Content-Type': 'application/json'},
                   body: jsonEncode({
@@ -391,7 +391,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                                                           onPressed:
                                                               () => _showDeleteConfirmation(
                                                                 context,
-                                                                customer['id'],
+                                                                customer['customer_id'],
                                                               ),
                                                           padding:
                                                               EdgeInsets.zero,

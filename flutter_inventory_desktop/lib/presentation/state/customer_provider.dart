@@ -22,47 +22,6 @@ class CustomerProvider with ChangeNotifier {
     _currentPage = 1;
   }
 
-  // Future<void> fetchCustomers() async {
-  //   _isLoading = true;
-  //   _error = null;
-  //   notifyListeners();
-
-  //   try {
-  //     final response = await client.get(
-  //       Uri.parse(
-  //         'http://localhost:5000/api/customers?page=$_currentPage&limit=$_limit',
-  //       ),
-  //     );
-  //     print('Raw response body: ${response.body}');
-  //     final data = jsonDecode(response.body) as Map<String, dynamic>;
-
-  //     if (response.statusCode == 200) {
-  //       final nestedData = data['data'] as Map<String, dynamic>?;
-  //       if (nestedData != null &&
-  //           nestedData.containsKey('data') &&
-  //           nestedData['data'] is List) {
-  //         _customers = nestedData['data'] as List<dynamic>;
-  //         print('Fetched customers: $_customers');
-  //       } else {
-  //         _error =
-  //             'Invalid response format: nested "data" is not a list or missing';
-  //         print('Invalid nested data: $nestedData');
-  //       }
-  //     } else {
-  //       _error =
-  //           'Failed to load customers: ${response.statusCode} - ${response.body}';
-  //       print(
-  //         'Failed with status: ${response.statusCode}, body: ${response.body}',
-  //       );
-  //     }
-  //   } catch (e) {
-  //     _error = 'Error: $e';
-  //     print('Error: $e');
-  //   } finally {
-  //     _isLoading = false;
-  //     notifyListeners();
-  //   }
-  // }
   Future<void> fetchCustomers({String? query}) async {
     _isLoading = true;
     _error = null;

@@ -96,7 +96,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
               try {
                 final response = await provider.client.put(
                   Uri.parse(
-                    'http://localhost:5000/api/suppliers/${supplier['id']}',
+                    'http://localhost:5000/api/suppliers/${supplier['supplier_id']}',
                   ),
                   headers: {'Content-Type': 'application/json'},
                   body: jsonEncode({
