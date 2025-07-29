@@ -236,6 +236,44 @@ class ApiService {
     return allSuppliers;
   }
 
+  //Fetch customer code added
+  static Future<List<Map<String, dynamic>>> fetchCustomers() async {
+  final List<Map<String, dynamic>> allCustomers = [];
+  int page = 1;
+  const int limit = 10; // Adjust based on backend default if needed
+
+  while (true) {
+    final response = await http.get(
+      Uri.parse('$baseUrl/customers?page=$page&limit=$limit'),
+    );
+
+    print('Raw response from /customers (page $page): ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is Map &&
+          data.containsKey('data') &&
+          data['data'] is Map &&
+          data['data'].containsKey('data')) {
+        final pageData = data['data']['data'] as List<dynamic>? ?? [];
+        allCustomers.addAll(pageData.cast<Map<String, dynamic>>());
+        final totalPages = data['data']['pages'] as int? ?? 1;
+        if (page >= totalPages) break;
+        page++;
+      } else {
+        throw Exception('Unexpected response format: $data');
+      }
+    } else {
+      throw Exception(
+        'Failed to load customers: ${response.statusCode} - ${response.body}',
+      );
+    }
+  }
+
+  return allCustomers;
+}
+
+
   // Submit a new purchase
   static Future<void> submitPurchase(Map<String, dynamic> data) async {
     final response = await http.post(

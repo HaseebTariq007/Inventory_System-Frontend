@@ -6,12 +6,15 @@ import 'presentation/screens/supplier_list_screen.dart';
 import 'presentation/screens/customer_list_screen.dart';
 import 'presentation/screens/purchase_screen.dart';
 import 'presentation/screens/stock_list_screen.dart';
+import 'presentation/screens/component_sale_screen.dart';
+
 
 // State Providers
 import 'presentation/state/supplier_provider.dart';
 import 'presentation/state/customer_provider.dart';
 import 'presentation/state/purchase_provider.dart';
 import 'presentation/state/stock_provider.dart';
+import 'presentation/state/component_sale_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,6 +53,7 @@ class MyApp extends StatelessWidget {
           '/supplier_list': (context) => const SupplierListScreen(),
           '/customer_list': (context) => const CustomerListScreen(),
           '/stock': (context) => StockListScreen(),
+          '/component_sale': (context) => ComponentSaleScreen(),
         },
       ),
     );

@@ -5447,6 +5447,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import 'package:provider/provider.dart';
+import '../state/purchase_provider.dart';
 
 class PurchaseForm extends StatefulWidget {
   @override
@@ -5455,22 +5457,32 @@ class PurchaseForm extends StatefulWidget {
 
 class _PurchaseFormState extends State<PurchaseForm> {
   bool isNewItem = false;
+  bool showSearchDropdown = false;
+  bool showSearchOptions = false;
+  bool showSearchField = false;
   String? selectedItem;
   String? selectedType;
   String? selectedSupplier;
   String paymentStatus = 'UNPAID';
   String? paymentMethod;
   String? selectedBankAccount;
+  String selectedSearchOption = 'item';
+  String? selectedDropdownValue;
+
+
 
   String? selectedFilter;
   String? selectedFilterValue;
 
+  final TextEditingController _searchController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController newItemNameController = TextEditingController();
   final TextEditingController newItemTypeController = TextEditingController();
   final TextEditingController newBankAccountController =
       TextEditingController();
+  final TextEditingController _purchaseDateController = TextEditingController();
+
 
   List<String> items = [];
   Map<String, List<String>> types = {};
@@ -5486,6 +5498,12 @@ class _PurchaseFormState extends State<PurchaseForm> {
     _loadDropdownData();
     _loadBankAccounts();
   }
+
+  @override
+void dispose() {
+  _purchaseDateController.dispose();
+  super.dispose();
+}
 
   Future<void> _loadDropdownData() async {
     try {
@@ -5681,80 +5699,635 @@ class _PurchaseFormState extends State<PurchaseForm> {
     );
   }
 
-  Widget _buildFilterUI() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  // Widget _buildFilterUI() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(8),
+  //     margin: const EdgeInsets.symmetric(vertical: 8),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(12),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.grey.withOpacity(0.1),
+  //           blurRadius: 8,
+  //           offset: const Offset(0, 2),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         SizedBox(
+  //           width: 180,
+  //           child: DropdownButtonFormField<String>(
+  //             value: selectedFilter,
+  //             hint: const Text('Select Item'),
+  //             decoration: _dropdownDecoration(''),
+  //             items:
+  //                 items
+  //                     .map(
+  //                       (item) => DropdownMenuItem<String>(
+  //                         value: item,
+  //                         child: Text(
+  //                           item,
+  //                           style: const TextStyle(fontWeight: FontWeight.bold),
+  //                         ),
+  //                       ),
+  //                     )
+  //                     .toList(),
+  //             onChanged: (value) {
+  //               setState(() {
+  //                 selectedFilter = value;
+  //                 selectedFilterValue = null;
+  //               });
+  //             },
+  //           ),
+  //         ),
+  //         const SizedBox(width: 8),
+  //         if (selectedFilter != null)
+  //           SizedBox(
+  //             width: 180,
+  //             child: DropdownButtonFormField<String>(
+  //               value: selectedFilterValue,
+  //               hint: const Text('Select Type'),
+  //               decoration: _dropdownDecoration(''),
+  //               items:
+  //                   types[selectedFilter]
+  //                       ?.map(
+  //                         (type) => DropdownMenuItem<String>(
+  //                           value: type,
+  //                           child: Text(type),
+  //                         ),
+  //                       )
+  //                       .toList() ??
+  //                   [],
+  //               onChanged: (value) {
+  //                 setState(() => selectedFilterValue = value);
+  //               },
+  //             ),
+  //           ),
+  //         const SizedBox(width: 8),
+  //         const Icon(Icons.filter_list),
+  //         const SizedBox(width: 4),
+  //         const Text('Filter'),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+//   //New _builtFilterUI code with search bar
+//   Widget _buildFilterUI() {
+//   return Container(
+//     padding: const EdgeInsets.all(8),
+//     margin: const EdgeInsets.symmetric(vertical: 8),
+//     decoration: BoxDecoration(
+//       color: Colors.white,
+//       borderRadius: BorderRadius.circular(12),
+//       boxShadow: [
+//         BoxShadow(
+//           color: Colors.grey.withOpacity(0.1),
+//           blurRadius: 8,
+//           offset: const Offset(0, 2),
+//         ),
+//       ],
+//     ),
+//     child: Row(
+//       children: [
+//         SizedBox(
+//           width: 160,
+//           height: 33,
+//           child: TextField(
+//             controller: _searchController,
+//             decoration: InputDecoration(
+//               hintText: 'Search by Item Name',
+//               filled: true,
+//               fillColor: Colors.grey.shade100,
+//               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+//               border: OutlineInputBorder(
+//                 borderRadius: BorderRadius.circular(10),
+//                 borderSide: BorderSide.none,
+//               ),
+//               suffixIcon: IconButton(
+//                 icon: const Icon(Icons.search),
+//                 onPressed: () {
+//                   Provider.of<PurchaseProvider>(context, listen: false)
+//                       .applySearch(_searchController.text);
+//                 },
+//               ),
+//             ),
+//             onSubmitted: (value) {
+//               Provider.of<PurchaseProvider>(context, listen: false)
+//                   .applySearch(value);
+//             },
+//           ),
+//         ),
+//         const SizedBox(width: 10),
+//         SizedBox(
+//           height: 30,
+//           child: IconButton(
+//             icon: const Icon(Icons.close),
+//             color: Colors.grey,
+//             onPressed: () {
+//               _searchController.clear();
+//               Provider.of<PurchaseProvider>(context, listen: false)
+//                   .clearSearch();
+//             },
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
+
+//New _buildFilterUI() with search icon dropdown
+// Widget _buildFilterUI() {
+//   return Container(
+//     margin: const EdgeInsets.symmetric(vertical: 8),
+//     padding: const EdgeInsets.all(12),
+//     decoration: BoxDecoration(
+//       color: Colors.white,
+//       borderRadius: BorderRadius.circular(12),
+//       boxShadow: [
+//         BoxShadow(
+//           color: Colors.grey.withOpacity(0.1),
+//           blurRadius: 8,
+//           offset: const Offset(0, 2),
+//         ),
+//       ],
+//     ),
+//     child: Row(
+//       children: [
+//         // Search Icon
+//         IconButton(
+//           icon: const Icon(Icons.search),
+//           onPressed: () {
+//             setState(() {
+//               showSearchDropdown = !showSearchDropdown;
+//             });
+//           },
+//         ),
+//         const SizedBox(width: 8),
+//         const Text(
+//           'Search',
+//           style: TextStyle(fontWeight: FontWeight.bold),
+//         ),
+//         const SizedBox(width: 16),
+
+//         // Show dropdown + textfield only when icon is clicked
+//         if (showSearchDropdown) ...[
+//           DropdownButton<String>(
+//             value: selectedSearchOption,
+//             items: const [
+//               DropdownMenuItem(
+//                 value: 'item',
+//                 child: Text('Search by Item Name'),
+//               ),
+//               DropdownMenuItem(
+//                 value: 'supplier',
+//                 child: Text('Search by Supplier Name'),
+//               ),
+//             ],
+//             onChanged: (value) {
+//               setState(() {
+//                 selectedSearchOption = value!;
+//                 showSearchField = true;
+//               });
+//             },
+//           ),
+//           const SizedBox(width: 16),
+//         ],
+
+//         // Show textfield only when dropdown option is selected
+//         if (showSearchDropdown && showSearchField)
+//           Expanded(
+//             child: TextField(
+//               controller: _searchController,
+//               decoration: InputDecoration(
+//                 hintText: 'Search...',
+//                 suffixIcon: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     IconButton(
+//                       icon: const Icon(Icons.search),
+//                       onPressed: () {
+//                         Provider.of<PurchaseProvider>(context, listen: false)
+//                             .applySearch(_searchController.text);
+//                       },
+//                     ),
+//                     IconButton(
+//                       icon: const Icon(Icons.close),
+//                       onPressed: () {
+//                         _searchController.clear();
+//                         Provider.of<PurchaseProvider>(context, listen: false)
+//                             .clearSearch();
+//                       },
+//                     ),
+//                   ],
+//                 ),
+//                 border: OutlineInputBorder(
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//               ),
+//               onSubmitted: (value) {
+//                 Provider.of<PurchaseProvider>(context, listen: false)
+//                     .applySearch(value);
+//               },
+//             ),
+//           ),
+//       ],
+//     ),
+//   );
+// }
+
+//New code _buildFilterUI with search_icon dropdown
+// Widget _buildFilterUI() {
+//   return Container(
+//     margin: const EdgeInsets.symmetric(vertical: 8),
+//     padding: const EdgeInsets.all(12),
+//     decoration: BoxDecoration(
+//       color: Colors.white,
+//       borderRadius: BorderRadius.circular(12),
+//       boxShadow: [
+//         BoxShadow(
+//           color: Colors.grey.withOpacity(0.1),
+//           blurRadius: 8,
+//           offset: const Offset(0, 2),
+//         ),
+//       ],
+//     ),
+//     child: Row(
+//       children: [
+//         // Search icon with popup menu
+//         PopupMenuButton<String>(
+//             child: Padding(
+//               padding: const EdgeInsets.symmetric(horizontal: 8.0),
+//               child: Row(
+//                 children: const [
+//                   Icon(Icons.filter_list),
+//                   SizedBox(width: 6),
+//                   Text(
+//                     'Filter',
+//                     style: TextStyle(fontWeight: FontWeight.bold),
+//                   ),
+//                 ],
+//               ),
+//             ),    
+//           onSelected: (value) {
+//             setState(() {
+//               selectedSearchOption = value;
+//               _searchController.clear(); //Add a new line
+//               selectedDropdownValue = null; //Clear dropdown on option change
+//               showSearchField = true;
+//             });
+//           },
+//           itemBuilder: (BuildContext context) => [
+//             const PopupMenuItem<String>(
+//               value: 'item',
+//               child: Text('Search by Item Name'),
+//             ),
+//             const PopupMenuItem<String>(
+//               value: 'supplier',
+//               child: Text('Search by Supplier Name'),
+//             ),
+//             const PopupMenuItem<String>(
+//               value: 'payment_status',
+//               child: Text('Payment Status'),
+//             ),
+//             const PopupMenuItem<String>(
+//               value: 'purchase_date',
+//               child: Text('Purchase Date'),
+//             ),
+//           ],
+//         ),
+
+//         const SizedBox(width: 12),
+
+//         // Input field with fixed width (same as Qty/Amount)
+//        if (showSearchField && 
+//           (selectedSearchOption == 'item' || selectedSearchOption == 'supplier')) //change this line if (showSearchField)
+//           SizedBox(
+//             width: 160,
+//             child: TextField(
+//               controller: _searchController,
+//               decoration: InputDecoration(
+//                 hintText: selectedSearchOption == 'item'
+//                     ? 'Search by Item Name'
+//                     : 'Search by Supplier Name',
+//                 suffixIcon: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     IconButton(
+//                       icon: const Icon(Icons.search),
+//                       onPressed: () {
+//                         // Provider.of<PurchaseProvider>(context, listen: false)
+//                         //     .applySearch(_searchController.text);
+//                           final provider = Provider.of<PurchaseProvider>(context, listen: false);
+//                             if (selectedSearchOption == 'item') {
+//                               provider.applySearch(_searchController.text, searchType: 'item');
+//                             } else if (selectedSearchOption == 'supplier') {
+//                               provider.applySearch(_searchController.text, searchType: 'supplier');
+//                             }
+//                       },
+//                     ),
+//                     // IconButton(
+//                     //   icon: const Icon(Icons.close),
+//                     //   onPressed: () {
+//                     //     _searchController.clear();
+//                     //     Provider.of<PurchaseProvider>(context, listen: false)
+//                     //         .clearSearch();
+//                     //   },
+//                     // ),
+//                   ],
+//                 ),
+//                 border: OutlineInputBorder(
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//               ),
+//               onSubmitted: (value) {
+//                 // Provider.of<PurchaseProvider>(context, listen: false)
+//                 //     .applySearch(value);
+
+//                 //Add new code
+//                   final provider = Provider.of<PurchaseProvider>(context, listen: false);
+//                   if (selectedSearchOption == 'item') {
+//                     provider.applySearch(value, searchType: 'item');
+//                   } else if (selectedSearchOption == 'supplier') {
+//                     provider.applySearch(value, searchType: 'supplier');
+//                   }
+//               },
+//             ),
+//           ),
+
+//             // Show dropdown for payment_status
+//             if (selectedSearchOption == 'payment_status')
+//               DropdownButton<String>(
+//                 hint: const Text('Select Payment Status'),
+//                 value: selectedDropdownValue,
+//                 items: const [
+//                   DropdownMenuItem(value: 'Paid', child: Text('Paid')),
+//                   DropdownMenuItem(value: 'Unpaid', child: Text('Unpaid')),
+//                 ],
+//                 onChanged: (value) {
+//                   setState(() => selectedDropdownValue = value);
+
+//                   // Trigger the filtering based on payment_status
+//                   Provider.of<PurchaseProvider>(context, listen: false)
+//                       .applySearch(value!, searchType: 'payment_status');
+//                 },
+//               ),
+
+//               // Show dropdown for purchase_date
+//               if (selectedSearchOption == 'purchase_date') ...[
+//           SizedBox(
+//             width: 160, // Match width with item/supplier input
+//             child: TextField(
+//               controller: _purchaseDateController,
+//               decoration: InputDecoration(
+//                 labelText: 'Enter Purchase Date',
+//                 hintText: 'YY:MM:DD', // Example: 25:07:27
+//                 suffixIcon: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     IconButton(
+//                       icon: const Icon(Icons.search),
+//                       onPressed: () {
+//                         final value = _purchaseDateController.text;
+//                         Provider.of<PurchaseProvider>(context, listen: false)
+//                             .applySearch(value, searchType: 'purchase_date');
+//                       },
+//                     ),
+//                     // IconButton(
+//                     //   icon: const Icon(Icons.close),
+//                     //   onPressed: () {
+//                     //     _purchaseDateController.clear();
+//                     //     Provider.of<PurchaseProvider>(context, listen: false)
+//                     //         .clearSearch();
+//                     //   },
+//                     // ),
+//                   ],
+//                 ),
+//                 border: OutlineInputBorder(
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//               ),
+//               onSubmitted: (value) {
+//                 Provider.of<PurchaseProvider>(context, listen: false)
+//                     .applySearch(value, searchType: 'purchase_date');
+//               },
+//             ),
+//           ),
+//         ],
+//       ],
+
+//         const SizedBox(width: 12), // spacing before reset button
+//             ElevatedButton.icon(
+//               onPressed: () {
+//                 _searchController.clear();
+//                 _purchaseDateController.clear();
+//                 selectedDropdownValue = null;
+
+//                 Provider.of<PurchaseProvider>(context, listen: false).clearSearch();
+
+//                 setState(() {
+//                   showSearchField = false;
+//                   selectedSearchOption = 'item';
+//                 });
+//               },
+//               icon: const Icon(Icons.refresh),
+//               label: const Text('Reset'),
+//             )
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: Colors.grey.shade200,
+//             foregroundColor: Colors.black87,
+//             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+//             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+//             elevation: 0,
+//           ),
+//         ),
+//     ),
+//   );
+// }
+
+Widget _buildFilterUI() {
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // Filter icon with popup menu
+        PopupMenuButton<String>(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              children: const [
+                Icon(Icons.filter_list),
+                SizedBox(width: 6),
+                Text(
+                  'Filter',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
+          onSelected: (value) {
+            setState(() {
+              selectedSearchOption = value;
+              _searchController.clear();
+              _purchaseDateController.clear();
+              selectedDropdownValue = null;
+              showSearchField = true;
+            });
+          },
+          itemBuilder: (BuildContext context) => [
+            const PopupMenuItem<String>(
+              value: 'item',
+              child: Text('Search by Item Name'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'supplier',
+              child: Text('Search by Supplier Name'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'payment_status',
+              child: Text('Payment Status'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'purchase_date',
+              child: Text('Purchase Date'),
+            ),
+          ],
+        ),
+
+        const SizedBox(width: 12),
+
+        // Input field for item/supplier
+        if (showSearchField &&
+            (selectedSearchOption == 'item' || selectedSearchOption == 'supplier'))
           SizedBox(
-            width: 180,
-            child: DropdownButtonFormField<String>(
-              value: selectedFilter,
-              hint: const Text('Select Item'),
-              decoration: _dropdownDecoration(''),
-              items:
-                  items
-                      .map(
-                        (item) => DropdownMenuItem<String>(
-                          value: item,
-                          child: Text(
-                            item,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      )
-                      .toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedFilter = value;
-                  selectedFilterValue = null;
-                });
+            width: 160,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: selectedSearchOption == 'item'
+                    ? 'Search by Item Name'
+                    : 'Search by Supplier Name',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    final provider = Provider.of<PurchaseProvider>(context, listen: false);
+                    if (selectedSearchOption == 'item') {
+                      provider.applySearch(_searchController.text, searchType: 'item');
+                    } else if (selectedSearchOption == 'supplier') {
+                      provider.applySearch(_searchController.text, searchType: 'supplier');
+                    }
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onSubmitted: (value) {
+                final provider = Provider.of<PurchaseProvider>(context, listen: false);
+                if (selectedSearchOption == 'item') {
+                  provider.applySearch(value, searchType: 'item');
+                } else if (selectedSearchOption == 'supplier') {
+                  provider.applySearch(value, searchType: 'supplier');
+                }
               },
             ),
           ),
-          const SizedBox(width: 8),
-          if (selectedFilter != null)
-            SizedBox(
-              width: 180,
-              child: DropdownButtonFormField<String>(
-                value: selectedFilterValue,
-                hint: const Text('Select Type'),
-                decoration: _dropdownDecoration(''),
-                items:
-                    types[selectedFilter]
-                        ?.map(
-                          (type) => DropdownMenuItem<String>(
-                            value: type,
-                            child: Text(type),
-                          ),
-                        )
-                        .toList() ??
-                    [],
-                onChanged: (value) {
-                  setState(() => selectedFilterValue = value);
-                },
+
+        // Dropdown for payment status
+        if (selectedSearchOption == 'payment_status')
+          DropdownButton<String>(
+            hint: const Text('Select Payment Status'),
+            value: selectedDropdownValue,
+            items: const [
+              DropdownMenuItem(value: 'Paid', child: Text('Paid')),
+              DropdownMenuItem(value: 'Unpaid', child: Text('Unpaid')),
+            ],
+            onChanged: (value) {
+              setState(() => selectedDropdownValue = value);
+              Provider.of<PurchaseProvider>(context, listen: false)
+                  .applySearch(value!, searchType: 'payment_status');
+            },
+          ),
+
+        // TextField for purchase date
+        if (selectedSearchOption == 'purchase_date') ...[
+      SizedBox(
+            width: 160,
+            child: TextField(
+              controller: _purchaseDateController,
+              decoration: InputDecoration(
+                labelText: 'Enter Purchase Date',
+                hintText: 'YY:MM:DD',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    final value = _purchaseDateController.text;
+                    Provider.of<PurchaseProvider>(context, listen: false)
+                        .applySearch(value, searchType: 'purchase_date');
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
+              onSubmitted: (value) {
+                Provider.of<PurchaseProvider>(context, listen: false)
+                    .applySearch(value, searchType: 'purchase_date');
+              },
             ),
-          const SizedBox(width: 8),
-          const Icon(Icons.filter_list),
-          const SizedBox(width: 4),
-          const Text('Filter'),
+          ),
+          const SizedBox(width: 12),
         ],
-      ),
-    );
-  }
+
+        if (
+          selectedSearchOption != 'item' ||
+          selectedDropdownValue != null ||
+          _searchController.text.isNotEmpty ||
+          _purchaseDateController.text.isNotEmpty
+        )
+
+          const SizedBox(width: 24),
+          ElevatedButton.icon(
+            onPressed: () {
+              _searchController.clear();
+              _purchaseDateController.clear();
+              selectedDropdownValue = null;
+
+              Provider.of<PurchaseProvider>(context, listen: false).clearSearch();
+
+              setState(() {
+                showSearchField = false;
+                selectedSearchOption = 'item'; // Reset to default
+              });
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reset'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF66032), // #F66032
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+          ),
+      ],
+    ),
+  );
+}
 
   InputDecoration _dropdownDecoration(String label) {
     return InputDecoration(

@@ -570,6 +570,8 @@ class PurchaseScreen extends StatefulWidget {
 class _PurchaseScreenState extends State<PurchaseScreen> {
   String _selectedPaymentMethod = 'CASH';
   String? _selectedBankAccount;
+  final TextEditingController _searchController = TextEditingController();
+
 
   void _showMarkAsPaidDialog(
     BuildContext context,
@@ -711,6 +713,47 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
               ],
             ),
           ),
+
+          /// Search Bar
+// Padding(
+//   padding: const EdgeInsets.symmetric(horizontal: 16),
+//   child: Row(
+//     children: [
+//       Expanded(
+//         child: TextField(
+//           controller: _searchController,
+//           decoration: InputDecoration(
+//             hintText: 'Search by Item Name',
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//             suffixIcon: IconButton(
+//               icon: const Icon(Icons.search),
+//               onPressed: () {
+//                 Provider.of<PurchaseProvider>(context, listen: false)
+//                     .applySearch(_searchController.text);
+//               },
+//             ),
+//           ),
+//           onSubmitted: (value) {
+//             Provider.of<PurchaseProvider>(context, listen: false)
+//                 .applySearch(value);
+//           },
+//         ),
+//       ),
+//       const SizedBox(width: 12),
+//       ElevatedButton(
+//         onPressed: () {
+//           _searchController.clear();
+//           Provider.of<PurchaseProvider>(context, listen: false).clearSearch();
+//         },
+//         child: const Text('Reset'),
+//         style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+//       ),
+//     ],
+//   ),
+// ),
+// const SizedBox(height: 12),
 
           /// Table Section
           Expanded(

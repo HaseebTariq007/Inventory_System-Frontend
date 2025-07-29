@@ -227,6 +227,16 @@ class PurchaseProvider with ChangeNotifier {
   List<Map<String, dynamic>> _purchases = [];
   bool _isLoading = false;
   String? _error;
+  String? _searchItem;
+  String? _searchSupplier;
+  String? _paymentStatus;
+  String? _purchaseDate;
+
+  String? get searchItem => _searchItem;
+  String? get searchSupplier => _searchSupplier;
+  String? get paymentStatus=> _paymentStatus;
+  String? get purchaseDate=> _purchaseDate;
+
 
   int _currentPage = 1;
   int _limit = 10;
@@ -239,35 +249,130 @@ class PurchaseProvider with ChangeNotifier {
 
   final String _baseUrl = 'http://localhost:5000/api';
 
-  Future<void> fetchPurchases() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  // Future<void> fetchPurchases() async {
+  //   _isLoading = true;
+  //   _error = null;
+  //   notifyListeners();
 
+  //   try {
+  //     final response = await client.get(
+  //       Uri.parse('$_baseUrl/purchases?page=$_currentPage&limit=$_limit'),
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       if (data['data'] != null && data['data']['data'] is List) {
+  //         _purchases = List<Map<String, dynamic>>.from(
+  //           data['data']['data'] ?? [],
+  //         );
+  //       } else {
+  //         _purchases = [];
+  //       }
+  //     } else {
+  //       _error = 'Failed to load purchases: ${response.statusCode}';
+  //     }
+  //   } catch (e) {
+  //     _error = 'Error: $e';
+  //   }
+
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
+    bool _isValidDate(String date) {
     try {
-      final response = await client.get(
-        Uri.parse('$_baseUrl/purchases?page=$_currentPage&limit=$_limit'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['data'] != null && data['data']['data'] is List) {
-          _purchases = List<Map<String, dynamic>>.from(
-            data['data']['data'] ?? [],
-          );
-        } else {
-          _purchases = [];
-        }
-      } else {
-        _error = 'Failed to load purchases: ${response.statusCode}';
-      }
-    } catch (e) {
-      _error = 'Error: $e';
+      final parts = date.split(':');
+      if (parts.length != 3) return false;
+      int.parse(parts[0]); // YY
+      int.parse(parts[1]); // MM
+      int.parse(parts[2]); // DD
+      return true;
+    } catch (_) {
+      return false;
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
+
+  Future<void> fetchPurchases() async {
+  _isLoading = true;
+  _error = null;
+  notifyListeners();
+
+  try {
+    final queryParams = {
+      'page': '$_currentPage',
+      'limit': '$_limit',
+      if (_searchItem != null && _searchItem!.isNotEmpty) 'item': _searchItem!,
+      if (_searchSupplier != null && _searchSupplier!.isNotEmpty) 'supplier': _searchSupplier!,
+      if (_paymentStatus != null && _paymentStatus!.isNotEmpty) 'payment_status': _paymentStatus!,
+      if (_purchaseDate != null && _purchaseDate!.isNotEmpty && _isValidDate(_purchaseDate!))
+        'purchase_date': _purchaseDate!,
+    };
+
+    final uri = Uri.parse('$_baseUrl/purchases').replace(queryParameters: queryParams);
+
+    final response = await client.get(uri);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['data'] != null && data['data']['data'] is List) {
+        _purchases = List<Map<String, dynamic>>.from(data['data']['data']);
+      } else {
+        _purchases = [];
+      }
+    } else {
+      _error = 'Failed to load purchases: ${response.statusCode}';
+    }
+  } catch (e) {
+    _error = 'Error: $e';
+  }
+
+  _isLoading = false;
+  notifyListeners();
+}
+
+//Add two new functions applySearch clearSearch
+// void applySearch(String? itemName) {
+//   _searchItem = itemName;
+//   _currentPage = 1;
+//   fetchPurchases();
+// }
+
+//Update applySearch function
+void applySearch(String? query, {String searchType = 'item'}) {
+    // Clear all filters first
+  _searchItem = null;
+  _searchSupplier = null;
+  _paymentStatus = null;
+  _purchaseDate = null;
+
+  if (searchType == 'item') {
+    _searchItem = query;
+  } else if (searchType == 'supplier') {
+    _searchSupplier = query;
+  } else if (searchType == 'payment_status') {
+    _paymentStatus = query;
+  } else if (searchType == 'purchase_date') {
+    _purchaseDate = query;
+  }
+  _currentPage = 1;
+  fetchPurchases();
+}
+
+
+// void clearSearch() {
+//   _searchItem = null;
+//   _currentPage = 1;
+//   fetchPurchases();
+// }
+
+//Update clearSearch function
+void clearSearch() {
+  _searchItem = null;
+  _searchSupplier = null;
+  _paymentStatus = null;
+  _purchaseDate = null;
+  _currentPage = 1;
+  fetchPurchases();
+}
 
   void nextPage() {
     _currentPage++;
