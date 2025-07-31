@@ -1,3 +1,5 @@
+// New code with reset button
+
 // ignore_for_file: unused_element
 
 import 'dart:convert';
@@ -16,12 +18,6 @@ class SupplierListScreen extends StatefulWidget {
 
 class _SupplierListScreenState extends State<SupplierListScreen> {
   final TextEditingController _searchController = TextEditingController();
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _refreshSuppliers();
-  // }
 
   @override
   void initState() {
@@ -165,6 +161,11 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
     );
   }
 
+  void _resetSearch() {
+    _searchController.clear();
+    Provider.of<SupplierProvider>(context, listen: false).clearSearch();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -222,6 +223,31 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: _resetSearch,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF55221),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.restore_outlined, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                'Reset',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
                         const Spacer(),
                         ElevatedButton(
                           onPressed: _showAddSupplierForm,
@@ -246,7 +272,6 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                 ),
               ),
 
-              // Replace this part inside your build method
               Expanded(
                 child:
                     provider.isLoading
@@ -448,7 +473,6 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                                 query: query.isEmpty ? null : query,
                               );
                             },
-                            // onPressed: _goToPreviousPage,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFFF55221),
                               foregroundColor: Colors.white,
@@ -459,11 +483,15 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                     ),
                     Text('Page ${provider.currentPage}'),
                     ElevatedButton(
-                      onPressed: () {
-                        final query = _searchController.text.trim();
-                        provider.nextPage(query: query.isEmpty ? null : query);
-                      },
-                      // onPressed: provider.nextPage,
+                      onPressed:
+                          provider.currentPage < provider.totalPages
+                              ? () {
+                                final query = _searchController.text.trim();
+                                provider.nextPage(
+                                  query: query.isEmpty ? null : query,
+                                );
+                              }
+                              : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFF55221),
                         foregroundColor: Colors.white,

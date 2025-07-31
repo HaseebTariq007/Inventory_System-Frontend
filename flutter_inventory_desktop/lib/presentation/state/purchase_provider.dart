@@ -1,220 +1,4 @@
-// //
-
-// //New Code
-
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import '../models/purchase.dart';
-
-// class PurchaseProvider with ChangeNotifier {
-//   final http.Client client = http.Client();
-
-//   List<Purchase> _purchases = [];
-//   bool _isLoading = false;
-//   String? _error;
-
-//   int _currentPage = 1;
-//   int _limit = 10;
-
-//   List<Purchase> get purchases => _purchases;
-//   bool get isLoading => _isLoading;
-//   String? get error => _error;
-//   int get currentPage => _currentPage;
-//   int get limit => _limit;
-
-//   Future<void> fetchPurchases() async {
-//     _isLoading = true;
-//     _error = null;
-//     notifyListeners();
-
-//     try {
-//       final response = await client.get(
-//         Uri.parse(
-//           'http://localhost:5000/api/purchases?page=$_currentPage&limit=$_limit',
-//         ),
-//       );
-
-//       if (response.statusCode == 200) {
-//         final data = jsonDecode(response.body);
-//         _purchases = (data['data'] as List)
-//             .map((json) => Purchase.fromJson(json))
-//             .toList();
-//       } else {
-//         _error = 'Failed to load purchases: ${response.statusCode}';
-//       }
-//     } catch (e) {
-//       _error = 'Error: $e';
-//     }
-
-//     _isLoading = false;
-//     notifyListeners();
-//   }
-
-//   void nextPage() {
-//     _currentPage++;
-//     fetchPurchases();
-//   }
-
-//   void previousPage() {
-//     if (_currentPage > 1) {
-//       _currentPage--;
-//       fetchPurchases();
-//     }
-//   }
-
-//   void changeLimit(int newLimit) {
-//     _limit = newLimit;
-//     _currentPage = 1;
-//     fetchPurchases();
-//   }
-
-//   void resetPage() {
-//     _currentPage = 1;
-//     fetchPurchases();
-//   }
-
-//   Future<void> deletePurchase(int id) async {
-//     try {
-//       final response = await client.delete(
-//         Uri.parse('http://localhost:5000/api/purchases/$id'),
-//       );
-//       if (response.statusCode == 200) {
-//         fetchPurchases();
-//       } else {
-//         _error = 'Failed to delete purchase: ${response.statusCode}';
-//         notifyListeners();
-//       }
-//     } catch (e) {
-//       _error = 'Error: $e';
-//       notifyListeners();
-//     }
-//   }
-
-//   @override
-//   void dispose() {
-//     client.close();
-//     super.dispose();
-//   }
-// }
-
-//New Code
-
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-
-// class PurchaseProvider with ChangeNotifier {
-//   final http.Client client = http.Client();
-
-//   List<Map<String, dynamic>> _purchases = [];
-//   bool _isLoading = false;
-//   String? _error;
-
-//   int _currentPage = 1;
-//   int _limit = 10;
-
-//   List<Map<String, dynamic>> get purchases => _purchases;
-//   bool get isLoading => _isLoading;
-//   String? get error => _error;
-//   int get currentPage => _currentPage;
-//   int get limit => _limit;
-
-//   final String _baseUrl = 'http://localhost:5000/api';
-
-//   // haseeb
-//   Future<void> fetchPurchases() async {
-//     _isLoading = true;
-//     _error = null;
-//     notifyListeners();
-
-//     try {
-//       final response = await client.get(
-//         Uri.parse('$_baseUrl/purchases?page=$_currentPage&limit=$_limit'),
-//       );
-
-//       if (response.statusCode == 200) {
-//         final data = jsonDecode(response.body);
-//         if (data['data'] != null && data['data']['data'] is List) {
-//           _purchases = List<Map<String, dynamic>>.from(
-//             data['data']['data'] ?? [],
-//           );
-//         } else {
-//           _purchases = []; // Fallback to empty list if data is invalid
-//         }
-//       } else {
-//         _error = 'Failed to load purchases: ${response.statusCode}';
-//       }
-//     } catch (e) {
-//       _error = 'Error: $e';
-//     }
-
-//     _isLoading = false;
-//     notifyListeners();
-//   }
-
-//   void nextPage() {
-//     _currentPage++;
-//     fetchPurchases();
-//   }
-
-//   void previousPage() {
-//     if (_currentPage > 1) {
-//       _currentPage--;
-//       fetchPurchases();
-//     }
-//   }
-
-//   void changeLimit(int newLimit) {
-//     _limit = newLimit;
-//     _currentPage = 1;
-//     fetchPurchases();
-//   }
-
-//   void resetPage() {
-//     _currentPage = 1;
-//     fetchPurchases();
-//   }
-
-//   Future<void> deletePurchase(int id) async {
-//     try {
-//       final response = await client.delete(
-//         Uri.parse('$_baseUrl/purchases/$id'),
-//       );
-//       if (response.statusCode == 200) {
-//         fetchPurchases();
-//       } else {
-//         _error = 'Failed to delete: ${response.statusCode}';
-//         notifyListeners();
-//       }
-//     } catch (e) {
-//       _error = 'Error: $e';
-//       notifyListeners();
-//     }
-//   }
-
-//   Future<void> submitPurchase(Map<String, dynamic> data) async {
-//     try {
-//       final response = await client.post(
-//         Uri.parse('$_baseUrl/purchases'),
-//         headers: {'Content-Type': 'application/json'},
-//         body: jsonEncode(data),
-//       );
-
-//       if (response.statusCode == 201 || response.statusCode == 200) {
-//         fetchPurchases(); // Refresh data after successful insert
-//       } else {
-//         _error = 'Failed to submit purchase: ${response.statusCode}';
-//         notifyListeners();
-//       }
-//     } catch (e) {
-//       _error = 'Error: $e';
-//       notifyListeners();
-//     }
-//   }
-// }
-
-// new haseeb updated code
+// new code with next pagination disabled
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -234,51 +18,23 @@ class PurchaseProvider with ChangeNotifier {
 
   String? get searchItem => _searchItem;
   String? get searchSupplier => _searchSupplier;
-  String? get paymentStatus=> _paymentStatus;
-  String? get purchaseDate=> _purchaseDate;
-
+  String? get paymentStatus => _paymentStatus;
+  String? get purchaseDate => _purchaseDate;
 
   int _currentPage = 1;
   int _limit = 10;
+  int _totalPages = 1; // Add total pages metadata
 
-  List<Map<String, dynamic>> get purchases => _purchases;
-  bool get isLoading => _isLoading;
   String? get error => _error;
   int get currentPage => _currentPage;
   int get limit => _limit;
+  int get totalPages => _totalPages; // Expose total pages
+  List<Map<String, dynamic>> get purchases => _purchases;
+  bool get isLoading => _isLoading;
 
   final String _baseUrl = 'http://localhost:5000/api';
 
-  // Future<void> fetchPurchases() async {
-  //   _isLoading = true;
-  //   _error = null;
-  //   notifyListeners();
-
-  //   try {
-  //     final response = await client.get(
-  //       Uri.parse('$_baseUrl/purchases?page=$_currentPage&limit=$_limit'),
-  //     );
-
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       if (data['data'] != null && data['data']['data'] is List) {
-  //         _purchases = List<Map<String, dynamic>>.from(
-  //           data['data']['data'] ?? [],
-  //         );
-  //       } else {
-  //         _purchases = [];
-  //       }
-  //     } else {
-  //       _error = 'Failed to load purchases: ${response.statusCode}';
-  //     }
-  //   } catch (e) {
-  //     _error = 'Error: $e';
-  //   }
-
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
-    bool _isValidDate(String date) {
+  bool _isValidDate(String date) {
     try {
       final parts = date.split(':');
       if (parts.length != 3) return false;
@@ -292,91 +48,90 @@ class PurchaseProvider with ChangeNotifier {
   }
 
   Future<void> fetchPurchases() async {
-  _isLoading = true;
-  _error = null;
-  notifyListeners();
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-  try {
-    final queryParams = {
-      'page': '$_currentPage',
-      'limit': '$_limit',
-      if (_searchItem != null && _searchItem!.isNotEmpty) 'item': _searchItem!,
-      if (_searchSupplier != null && _searchSupplier!.isNotEmpty) 'supplier': _searchSupplier!,
-      if (_paymentStatus != null && _paymentStatus!.isNotEmpty) 'payment_status': _paymentStatus!,
-      if (_purchaseDate != null && _purchaseDate!.isNotEmpty && _isValidDate(_purchaseDate!))
-        'purchase_date': _purchaseDate!,
-    };
+    try {
+      final queryParams = {
+        'page': '$_currentPage',
+        'limit': '$_limit',
+        if (_searchItem != null && _searchItem!.isNotEmpty)
+          'item': _searchItem!,
+        if (_searchSupplier != null && _searchSupplier!.isNotEmpty)
+          'supplier': _searchSupplier!,
+        if (_paymentStatus != null && _paymentStatus!.isNotEmpty)
+          'payment_status': _paymentStatus!,
+        if (_purchaseDate != null &&
+            _purchaseDate!.isNotEmpty &&
+            _isValidDate(_purchaseDate!))
+          'purchase_date': _purchaseDate!,
+      };
 
-    final uri = Uri.parse('$_baseUrl/purchases').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$_baseUrl/purchases',
+      ).replace(queryParameters: queryParams);
 
-    final response = await client.get(uri);
+      final response = await client.get(uri);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['data'] != null && data['data']['data'] is List) {
-        _purchases = List<Map<String, dynamic>>.from(data['data']['data']);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] != null) {
+          if (data['data']['data'] is List) {
+            _purchases = List<Map<String, dynamic>>.from(data['data']['data']);
+          } else {
+            _purchases = [];
+          }
+          // Update total pages from backend response
+          _totalPages = data['data']['pages'] ?? 1;
+        } else {
+          _purchases = [];
+          _totalPages = 1;
+        }
       } else {
-        _purchases = [];
+        _error = 'Failed to load purchases: ${response.statusCode}';
       }
-    } else {
-      _error = 'Failed to load purchases: ${response.statusCode}';
+    } catch (e) {
+      _error = 'Error: $e';
     }
-  } catch (e) {
-    _error = 'Error: $e';
+
+    _isLoading = false;
+    notifyListeners();
   }
 
-  _isLoading = false;
-  notifyListeners();
-}
+  void applySearch(String? query, {String searchType = 'item'}) {
+    _searchItem = null;
+    _searchSupplier = null;
+    _paymentStatus = null;
+    _purchaseDate = null;
 
-//Add two new functions applySearch clearSearch
-// void applySearch(String? itemName) {
-//   _searchItem = itemName;
-//   _currentPage = 1;
-//   fetchPurchases();
-// }
-
-//Update applySearch function
-void applySearch(String? query, {String searchType = 'item'}) {
-    // Clear all filters first
-  _searchItem = null;
-  _searchSupplier = null;
-  _paymentStatus = null;
-  _purchaseDate = null;
-
-  if (searchType == 'item') {
-    _searchItem = query;
-  } else if (searchType == 'supplier') {
-    _searchSupplier = query;
-  } else if (searchType == 'payment_status') {
-    _paymentStatus = query;
-  } else if (searchType == 'purchase_date') {
-    _purchaseDate = query;
+    if (searchType == 'item') {
+      _searchItem = query;
+    } else if (searchType == 'supplier') {
+      _searchSupplier = query;
+    } else if (searchType == 'payment_status') {
+      _paymentStatus = query;
+    } else if (searchType == 'purchase_date') {
+      _purchaseDate = query;
+    }
+    _currentPage = 1;
+    fetchPurchases();
   }
-  _currentPage = 1;
-  fetchPurchases();
-}
 
-
-// void clearSearch() {
-//   _searchItem = null;
-//   _currentPage = 1;
-//   fetchPurchases();
-// }
-
-//Update clearSearch function
-void clearSearch() {
-  _searchItem = null;
-  _searchSupplier = null;
-  _paymentStatus = null;
-  _purchaseDate = null;
-  _currentPage = 1;
-  fetchPurchases();
-}
+  void clearSearch() {
+    _searchItem = null;
+    _searchSupplier = null;
+    _paymentStatus = null;
+    _purchaseDate = null;
+    _currentPage = 1;
+    fetchPurchases();
+  }
 
   void nextPage() {
-    _currentPage++;
-    fetchPurchases();
+    if (_currentPage < _totalPages) {
+      _currentPage++;
+      fetchPurchases();
+    }
   }
 
   void previousPage() {
@@ -416,14 +171,4 @@ void clearSearch() {
       notifyListeners();
     }
   }
-
-  // Future<void> updatePurchase(int purchaseId, Map<String, dynamic> data) async {
-  //   try {
-  //     await ApiService.updatePurchase(purchaseId, data);
-  //     fetchPurchases();
-  //   } catch (e) {
-  //     _error = 'Error updating purchase: $e';
-  //     notifyListeners();
-  //   }
-  // }
 }

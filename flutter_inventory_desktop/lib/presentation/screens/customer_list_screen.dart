@@ -1,3 +1,5 @@
+// new code with reset button and next button disable
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,10 +42,6 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       provider.resetPage();
     }
     provider.fetchCustomers(query: query);
-    // Provider.of<CustomerProvider>(
-    //   context,
-    //   listen: false,
-    // ).fetchCustomers(query: query);
   }
 
   void _showAddCustomerForm() {
@@ -169,6 +167,11 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     );
   }
 
+  void _resetSearch() {
+    _searchController.clear();
+    Provider.of<CustomerProvider>(context, listen: false).clearSearch();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,6 +227,24 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                                 borderSide: BorderSide.none,
                               ),
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: _resetSearch,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF55221),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
                         const Spacer(),
@@ -454,7 +475,10 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                     ),
                     Text('Page ${provider.currentPage}'),
                     ElevatedButton(
-                      onPressed: provider.nextPage,
+                      onPressed:
+                          provider.currentPage < provider.totalPages
+                              ? provider.nextPage
+                              : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF55221),
                         foregroundColor: Colors.white,

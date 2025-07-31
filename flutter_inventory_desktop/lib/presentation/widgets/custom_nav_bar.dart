@@ -1,4 +1,5 @@
-// lets add the link of this page in custom navbar code
+// // Navbar shifted to right
+
 // import 'package:flutter/material.dart';
 
 // class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
@@ -21,25 +22,25 @@
 //               fontWeight: FontWeight.bold,
 //             ),
 //           ),
-//           const SizedBox(width: 30),
-//           Expanded(
-//             child: Row(
-//               children: [
-//                 _buildNavButton(context, 'Dashboard'),
-//                 const SizedBox(width: 12),
-//                 _buildNavButton(context, 'Supplier List'),
-//                 const SizedBox(width: 12),
-//                 _buildInventoryDropdown(context),
-//                 const SizedBox(width: 12),
-//                 _buildNavButton(context, 'Customer List'),
-//                 const SizedBox(width: 12),
-//                 _buildDropdown(context, 'Sale'),
-//                 const SizedBox(width: 12),
-//                 _buildDropdown(context, 'Employee'),
-//                 const SizedBox(width: 12),
-//                 _buildNavButton(context, 'Daily Expense'),
-//               ],
-//             ),
+//           const Spacer(), // Pushes navigation items to the right
+//           Row(
+//             mainAxisAlignment:
+//                 MainAxisAlignment.spaceEvenly, // Equal spacing between items
+//             children: [
+//               _buildNavButton(context, 'Dashboard'),
+//               const SizedBox(width: 12),
+//               _buildNavButton(context, 'Supplier List'),
+//               const SizedBox(width: 12),
+//               _buildInventoryDropdown(context),
+//               const SizedBox(width: 12),
+//               _buildNavButton(context, 'Customer List'),
+//               const SizedBox(width: 12),
+//               _buildSaleDropdown(context),
+//               const SizedBox(width: 12),
+//               _buildDropdown(context, 'Employee'),
+//               const SizedBox(width: 12),
+//               _buildNavButton(context, 'Daily Expense'),
+//             ],
 //           ),
 //         ],
 //       ),
@@ -55,6 +56,10 @@
 //             Navigator.pushReplacementNamed(context, '/supplier_list');
 //           } else if (label == 'Customer List') {
 //             Navigator.pushReplacementNamed(context, '/customer_list');
+//           } else if (label == 'Dashboard') {
+//             Navigator.pushReplacementNamed(context, '/dashboard');
+//           } else if (label == 'Daily Expense') {
+//             Navigator.pushReplacementNamed(context, '/expense');
 //           } else {
 //             ScaffoldMessenger.of(context).showSnackBar(
 //               SnackBar(content: Text('$label navigation not implemented.')),
@@ -70,54 +75,98 @@
 //     );
 //   }
 
-//   Widget _buildDropdown(BuildContext context, String label) {
+//   Widget _buildInventoryDropdown(BuildContext context) {
 //     return SizedBox(
 //       height: 40,
-//       child: DropdownButtonHideUnderline(
-//         child: DropdownButton<String>(
-//           dropdownColor: Colors.white,
-//           hint: Text(label, style: const TextStyle(color: Colors.white)),
-//           items: const [
-//             DropdownMenuItem(child: Text('Option 1'), value: '1'),
-//             DropdownMenuItem(child: Text('Option 2'), value: '2'),
+//       child: PopupMenuButton<String>(
+//         color: Colors.white,
+//         icon: const Row(
+//           children: [
+//             Text('Inventory', style: TextStyle(color: Colors.white)),
+//             Icon(Icons.arrow_drop_down, color: Colors.white),
 //           ],
-//           onChanged: (value) {
-//             ScaffoldMessenger.of(context).showSnackBar(
-//               SnackBar(content: Text('$label -> Option $value selected')),
-//             );
-//           },
-//           iconEnabledColor: Colors.white,
 //         ),
+//         onSelected: (value) {
+//           if (value == 'purchase') {
+//             Navigator.pushReplacementNamed(context, '/purchase');
+//           } else if (value == 'stock') {
+//             Navigator.pushReplacementNamed(context, '/stock');
+//           }
+//         },
+//         itemBuilder:
+//             (BuildContext context) => [
+//               const PopupMenuItem<String>(
+//                 value: 'purchase',
+//                 child: Text('Purchase Product'),
+//               ),
+//               const PopupMenuItem<String>(
+//                 value: 'stock',
+//                 child: Text('Stock Page'),
+//               ),
+//             ],
+//         offset: const Offset(0, 40),
 //       ),
 //     );
 //   }
 
-//   Widget _buildInventoryDropdown(BuildContext context) {
+//   // ✅ NEW: Sale dropdown with routes
+//   Widget _buildSaleDropdown(BuildContext context) {
 //     return SizedBox(
 //       height: 40,
-//       child: DropdownButtonHideUnderline(
-//         child: DropdownButton<String>(
-//           dropdownColor: Colors.white,
-//           hint: const Text('Inventory', style: TextStyle(color: Colors.white)),
-//           iconEnabledColor: Colors.white,
-//           items: const [
-//             DropdownMenuItem(
-//               value: 'purchase',
-//               child: Text('Purchase Product'),
-//             ),
-//             DropdownMenuItem(
-//               value: 'stock',
-//               child: Text('Stock Page'),
-//             ),
+//       child: PopupMenuButton<String>(
+//         color: Colors.white,
+//         icon: const Row(
+//           children: [
+//             Text('Sale', style: TextStyle(color: Colors.white)),
+//             Icon(Icons.arrow_drop_down, color: Colors.white),
 //           ],
-//           onChanged: (value) {
-//             if (value == 'purchase') {
-//               Navigator.pushReplacementNamed(context, '/purchase');
-//             } else if (value == 'stock') {
-//               Navigator.pushReplacementNamed(context, '/stock');
-//             }
-//           },
 //         ),
+//         onSelected: (value) {
+//           if (value == 'component_sale') {
+//             Navigator.pushReplacementNamed(context, '/component_sale');
+//           } else if (value == 'sale_report') {
+//             Navigator.pushReplacementNamed(context, '/sale_report');
+//           }
+//         },
+//         itemBuilder:
+//             (BuildContext context) => [
+//               const PopupMenuItem<String>(
+//                 value: 'component_sale',
+//                 child: Text('Component Sale'),
+//               ),
+//               const PopupMenuItem<String>(
+//                 value: 'sale_report',
+//                 child: Text('Sales Report'),
+//               ),
+//             ],
+//         offset: const Offset(0, 40),
+//       ),
+//     );
+//   }
+
+//   // Placeholder for Employee or other dropdowns
+//   Widget _buildDropdown(BuildContext context, String label) {
+//     return SizedBox(
+//       height: 40,
+//       child: PopupMenuButton<String>(
+//         color: Colors.white,
+//         icon: const Row(
+//           children: [
+//             Text('Employee', style: TextStyle(color: Colors.white)),
+//             Icon(Icons.arrow_drop_down, color: Colors.white),
+//           ],
+//         ),
+//         onSelected: (value) {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             SnackBar(content: Text('$label -> Option $value selected')),
+//           );
+//         },
+//         itemBuilder:
+//             (BuildContext context) => const [
+//               PopupMenuItem<String>(value: '1', child: Text('Option 1')),
+//               PopupMenuItem<String>(value: '2', child: Text('Option 2')),
+//             ],
+//         offset: const Offset(0, 40),
 //       ),
 //     );
 //   }
@@ -148,25 +197,24 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(width: 30),
-          Expanded(
-            child: Row(
-              children: [
-                _buildNavButton(context, 'Dashboard'),
-                const SizedBox(width: 12),
-                _buildNavButton(context, 'Supplier List'),
-                const SizedBox(width: 12),
-                _buildInventoryDropdown(context),
-                const SizedBox(width: 12),
-                _buildNavButton(context, 'Customer List'),
-                const SizedBox(width: 12),
-                _buildSaleDropdown(context), // <-- NEW
-                const SizedBox(width: 12),
-                _buildDropdown(context, 'Employee'),
-                const SizedBox(width: 12),
-                _buildNavButton(context, 'Daily Expense'),
-              ],
-            ),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavButton(context, 'Dashboard'),
+              const SizedBox(width: 12),
+              _buildNavButton(context, 'Supplier List'),
+              const SizedBox(width: 12),
+              _buildInventoryDropdown(context),
+              const SizedBox(width: 12),
+              _buildNavButton(context, 'Customer List'),
+              const SizedBox(width: 12),
+              _buildSaleDropdown(context),
+              const SizedBox(width: 12),
+              _buildDropdown(context, 'Employee'),
+              const SizedBox(width: 12),
+              _buildNavButton(context, 'Daily Expense'),
+            ],
           ),
         ],
       ),
@@ -196,7 +244,13 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
-        child: Text(label),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600, // Slightly bold
+          ),
+        ),
       ),
     );
   }
@@ -204,23 +258,40 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildInventoryDropdown(BuildContext context) {
     return SizedBox(
       height: 40,
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          dropdownColor: Colors.white,
-          hint: const Text('Inventory', style: TextStyle(color: Colors.white)),
-          iconEnabledColor: Colors.white,
-          items: const [
-            DropdownMenuItem(value: 'purchase', child: Text('Purchase Product')),
-            DropdownMenuItem(value: 'stock', child: Text('Stock Page')),
+      child: PopupMenuButton<String>(
+        color: Colors.white,
+        icon: const Row(
+          children: [
+            Text(
+              'Inventory',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600, // Slightly bold
+              ),
+            ),
+            Icon(Icons.arrow_drop_down, color: Colors.white),
           ],
-          onChanged: (value) {
-            if (value == 'purchase') {
-              Navigator.pushReplacementNamed(context, '/purchase');
-            } else if (value == 'stock') {
-              Navigator.pushReplacementNamed(context, '/stock');
-            }
-          },
         ),
+        onSelected: (value) {
+          if (value == 'purchase') {
+            Navigator.pushReplacementNamed(context, '/purchase');
+          } else if (value == 'stock') {
+            Navigator.pushReplacementNamed(context, '/stock');
+          }
+        },
+        itemBuilder:
+            (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'purchase',
+                child: Text('Purchase Product'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'stock',
+                child: Text('Stock Page'),
+              ),
+            ],
+        offset: const Offset(0, 40),
       ),
     );
   }
@@ -229,29 +300,40 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildSaleDropdown(BuildContext context) {
     return SizedBox(
       height: 40,
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          dropdownColor: Colors.white,
-          hint: const Text('Sale', style: TextStyle(color: Colors.white)),
-          iconEnabledColor: Colors.white,
-          items: const [
-            DropdownMenuItem(
-              value: 'component_sale',
-              child: Text('Component Sale'),
+      child: PopupMenuButton<String>(
+        color: Colors.white,
+        icon: const Row(
+          children: [
+            Text(
+              'Sale',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600, // Slightly bold
+              ),
             ),
-            DropdownMenuItem(
-              value: 'sale_report',
-              child: Text('Sale Report'),
-            ),
+            Icon(Icons.arrow_drop_down, color: Colors.white),
           ],
-          onChanged: (value) {
-            if (value == 'component_sale') {
-              Navigator.pushReplacementNamed(context, '/component_sale');
-            } else if (value == 'sale_report') {
-              Navigator.pushReplacementNamed(context, '/sale_report');
-            }
-          },
         ),
+        onSelected: (value) {
+          if (value == 'component_sale') {
+            Navigator.pushReplacementNamed(context, '/component_sale');
+          } else if (value == 'sale_report') {
+            Navigator.pushReplacementNamed(context, '/sale_report');
+          }
+        },
+        itemBuilder:
+            (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'component_sale',
+                child: Text('Component Sale'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'sale_report',
+                child: Text('Sales Report'),
+              ),
+            ],
+        offset: const Offset(0, 40),
       ),
     );
   }
@@ -260,21 +342,32 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildDropdown(BuildContext context, String label) {
     return SizedBox(
       height: 40,
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          dropdownColor: Colors.white,
-          hint: Text(label, style: const TextStyle(color: Colors.white)),
-          items: const [
-            DropdownMenuItem(child: Text('Option 1'), value: '1'),
-            DropdownMenuItem(child: Text('Option 2'), value: '2'),
+      child: PopupMenuButton<String>(
+        color: Colors.white,
+        icon: const Row(
+          children: [
+            Text(
+              'Employee',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600, // Slightly bold
+              ),
+            ),
+            Icon(Icons.arrow_drop_down, color: Colors.white),
           ],
-          onChanged: (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$label -> Option $value selected')),
-            );
-          },
-          iconEnabledColor: Colors.white,
         ),
+        onSelected: (value) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$label -> Option $value selected')),
+          );
+        },
+        itemBuilder:
+            (BuildContext context) => const [
+              PopupMenuItem<String>(value: '1', child: Text('Option 1')),
+              PopupMenuItem<String>(value: '2', child: Text('Option 2')),
+            ],
+        offset: const Offset(0, 40),
       ),
     );
   }

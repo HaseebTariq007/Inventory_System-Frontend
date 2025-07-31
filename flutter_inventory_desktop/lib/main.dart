@@ -1,3 +1,5 @@
+// haseeb code addition
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +9,7 @@ import 'presentation/screens/customer_list_screen.dart';
 import 'presentation/screens/purchase_screen.dart';
 import 'presentation/screens/stock_list_screen.dart';
 import 'presentation/screens/component_sale_screen.dart';
-
+import 'presentation/screens/sale_history_Screen.dart';
 
 // State Providers
 import 'presentation/state/supplier_provider.dart';
@@ -15,6 +17,7 @@ import 'presentation/state/customer_provider.dart';
 import 'presentation/state/purchase_provider.dart';
 import 'presentation/state/stock_provider.dart';
 import 'presentation/state/component_sale_provider.dart';
+import 'presentation/state/sale_history_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +42,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => StockProvider()..fetchStockData(),
         ),
+        ChangeNotifierProvider(create: (_) => SaleProvider()..fetchSales()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -54,6 +58,7 @@ class MyApp extends StatelessWidget {
           '/customer_list': (context) => const CustomerListScreen(),
           '/stock': (context) => StockListScreen(),
           '/component_sale': (context) => ComponentSaleScreen(),
+          '/sale_report': (context) => const SaleScreen(),
         },
       ),
     );
@@ -68,9 +73,7 @@ class StockScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Stock Page')),
-      body: const Center(
-        child: Text('Stock page content goes here'),
-      ),
+      body: const Center(child: Text('Stock page content goes here')),
     );
   }
 }

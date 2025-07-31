@@ -1,4 +1,3 @@
-// lib/presentation/state/supplier_provider.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,55 +9,14 @@ class SupplierProvider with ChangeNotifier {
   final http.Client client = http.Client();
   int _limit = 10; // Default limit set to 10
   int _currentPage = 1;
+  int _totalPages = 1; // Add total pages metadata
 
   List<dynamic> get suppliers => _suppliers;
   bool get isLoading => _isLoading;
   String? get error => _error;
   int get limit => _limit;
-  int get currentPage => _currentPage; // New: Expose _currentPage as a getter
-
-  // Future<void> fetchSuppliers() async {
-  //   _isLoading = true;
-  //   _error = null;
-  //   notifyListeners();
-
-  //   try {
-  //     final response = await client.get(
-  //       Uri.parse(
-  //         'http://localhost:5000/api/suppliers?page=$_currentPage&limit=$_limit',
-  //       ),
-  //     );
-  //     print(
-  //       'Raw response body: ${response.body}',
-  //     ); // Log raw response for debugging
-  //     final data = jsonDecode(response.body) as Map<String, dynamic>;
-  //     if (response.statusCode == 200) {
-  //       final nestedData = data['data'] as Map<String, dynamic>?;
-  //       if (nestedData != null &&
-  //           nestedData.containsKey('data') &&
-  //           nestedData['data'] is List) {
-  //         _suppliers = nestedData['data'] as List<dynamic>;
-  //         print('Fetched suppliers: $_suppliers'); // Debug log
-  //       } else {
-  //         _error =
-  //             'Invalid response format: nested "data" is not a list or missing';
-  //         print('Invalid nested data: $nestedData');
-  //       }
-  //     } else {
-  //       _error =
-  //           'Failed to load suppliers: ${response.statusCode} - ${response.body}';
-  //       print(
-  //         'Failed with status: ${response.statusCode}, body: ${response.body}',
-  //       );
-  //     }
-  //   } catch (e) {
-  //     _error = 'Error: $e';
-  //     print('Error: $e');
-  //   } finally {
-  //     _isLoading = false;
-  //     notifyListeners();
-  //   }
-  // }
+  int get currentPage => _currentPage; // Expose _currentPage as a getter
+  int get totalPages => _totalPages; // Expose total pages
 
   Future<void> fetchSuppliers({String? query}) async {
     _isLoading = true;
@@ -83,16 +41,24 @@ class SupplierProvider with ChangeNotifier {
             nestedData.containsKey('data') &&
             nestedData['data'] is List) {
           _suppliers = nestedData['data'] as List<dynamic>;
+          // Update total pages from backend response
+          _totalPages = nestedData['pages'] ?? 1;
         } else {
           _error =
               'Invalid response format: nested "data" is not a list or missing';
+          _suppliers = [];
+          _totalPages = 1;
         }
       } else {
         _error =
             'Failed to load suppliers: ${response.statusCode} - ${response.body}';
+        _suppliers = [];
+        _totalPages = 1;
       }
     } catch (e) {
       _error = 'Error: $e';
+      _suppliers = [];
+      _totalPages = 1;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -105,22 +71,11 @@ class SupplierProvider with ChangeNotifier {
     fetchSuppliers();
   }
 
-  // void nextPage() {
-  //   _currentPage++;
-  //   fetchSuppliers();
-  // }
-
-  // // Updated: Use setPage for Previous button
-  // void previousPage() {
-  //   if (_currentPage > 1) {
-  //     _currentPage--;
-  //     fetchSuppliers();
-  //   }
-  // }
-
   void nextPage({String? query}) {
-    _currentPage++;
-    fetchSuppliers(query: query);
+    if (_currentPage < _totalPages) {
+      _currentPage++;
+      fetchSuppliers(query: query);
+    }
   }
 
   void previousPage({String? query}) {
@@ -145,6 +100,11 @@ class SupplierProvider with ChangeNotifier {
       _error = 'Error: $e';
       notifyListeners();
     }
+  }
+
+  void clearSearch() {
+    _currentPage = 1;
+    fetchSuppliers(); // Fetch without query to clear search
   }
 
   @override

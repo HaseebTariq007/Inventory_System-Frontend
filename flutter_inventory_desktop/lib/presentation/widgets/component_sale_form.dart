@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,9 +8,9 @@ import '../services/api_service.dart';
 import '../state/component_sale_provider.dart';
 
 class ComponentSaleForm extends StatefulWidget {
-    final void Function(Map<String, dynamic>)? onSaleCreated;
+  final void Function(Map<String, dynamic>)? onSaleCreated;
 
-    const ComponentSaleForm({super.key, this.onSaleCreated});
+  const ComponentSaleForm({super.key, this.onSaleCreated});
 
   @override
   _ComponentSaleFormState createState() => _ComponentSaleFormState();
@@ -24,13 +26,15 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
 
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController newBankAccountController = TextEditingController();
+  final TextEditingController newBankAccountController =
+      TextEditingController();
 
   List<String> items = [];
   Map<String, List<String>> types = {};
   Map<String, int> itemNameToId = {};
   Map<String, Map<String, int>> itemTypeToId = {};
-  Map<String, String> customerIdToName = {}; // key: customer_id, value: customer name
+  Map<String, String> customerIdToName =
+      {}; // key: customer_id, value: customer name
   List<String> customers = [];
   Map<String, String> customerNameToId = {};
   List<String> bankAccounts = ['MEEZAN', 'HBL', 'UBL'];
@@ -160,7 +164,10 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
           fillColor: Colors.grey.shade100,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -187,13 +194,24 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
           labelText: label,
           filled: true,
           fillColor: Colors.grey.shade100,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide.none,
           ),
         ),
-        items: items.map((item) => DropdownMenuItem<T>(value: item, child: Text(item.toString()))).toList(),
+        items:
+            items
+                .map(
+                  (item) => DropdownMenuItem<T>(
+                    value: item,
+                    child: Text(item.toString()),
+                  ),
+                )
+                .toList(),
         onChanged: onChanged,
       ),
     );
@@ -204,32 +222,35 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
       width: 160,
       height: 36,
       child: Row(
-        children: ['PAID', 'UNPAID'].map((label) {
-          final isActive = paymentStatus == label;
-          return Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              child: ElevatedButton(
-                onPressed: () => setState(() {
-                  paymentStatus = label;
-                  if (paymentStatus == 'PAID') {
-                    paymentMethod = null;
-                    selectedBankAccount = null;
-                  }
-                }),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isActive ? const Color(0xFFF55221) : Colors.grey,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+        children:
+            ['PAID', 'UNPAID'].map((label) {
+              final isActive = paymentStatus == label;
+              return Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  child: ElevatedButton(
+                    onPressed:
+                        () => setState(() {
+                          paymentStatus = label;
+                          if (paymentStatus == 'PAID') {
+                            paymentMethod = null;
+                            selectedBankAccount = null;
+                          }
+                        }),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isActive ? const Color(0xFFF55221) : Colors.grey,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(label),
                   ),
                 ),
-                child: Text(label),
-              ),
-            ),
-          );
-        }).toList(),
+              );
+            }).toList(),
       ),
     );
   }
@@ -256,9 +277,9 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
         selectedCustomer == null ||
         quantityController.text.isEmpty ||
         amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
       return;
     }
 
@@ -267,7 +288,9 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
             (paymentMethod == 'BANK' && selectedBankAccount == null))) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Please select a payment method and bank account if applicable"),
+          content: Text(
+            "Please select a payment method and bank account if applicable",
+          ),
         ),
       );
       return;
@@ -281,22 +304,24 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
     final customerId = customerNameToId[selectedCustomer!];
 
     final saleData = {
-        'item_id': itemId,
-        'item_name': selectedItem,
-        'item_type': selectedType,
-        'customer_id': customerId,
-        'customer_name': customerIdToName[customerId],
-        'quantity': quantity,
-        'total_amount': total,
-        'payment_status': paymentStatus,
-        'payment_method': paymentStatus == 'PAID' ? paymentMethod : null,
-        if (paymentMethod == 'BANK' && selectedBankAccount != null)
-            'bank_account': selectedBankAccount,
-        };
+      'item_id': itemId,
+      'item_name': selectedItem,
+      'item_type': selectedType,
+      'customer_id': customerId,
+      'customer_name': customerIdToName[customerId],
+      'quantity': quantity,
+      'total_amount': total,
+      'payment_status': paymentStatus,
+      'payment_method': paymentStatus == 'PAID' ? paymentMethod : null,
+      if (paymentMethod == 'BANK' && selectedBankAccount != null)
+        'bank_account': selectedBankAccount,
+    };
 
     try {
-      await Provider.of<ComponentSaleProvider>(context, listen: false)
-    .createSale(saleData);
+      await Provider.of<ComponentSaleProvider>(
+        context,
+        listen: false,
+      ).createSale(saleData);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Sale created successfully")),
@@ -306,9 +331,9 @@ class _ComponentSaleFormState extends State<ComponentSaleForm> {
       await _loadDropdownData();
       _resetFormFields();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error creating sale")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error creating sale")));
     }
   }
 

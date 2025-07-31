@@ -1,4 +1,3 @@
-// lib/presentation/state/customer_provider.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,14 +9,15 @@ class CustomerProvider with ChangeNotifier {
   final http.Client client = http.Client();
   int _limit = 10;
   int _currentPage = 1;
+  int _totalPages = 1; // Add total pages metadata
 
   List<dynamic> get customers => _customers;
   bool get isLoading => _isLoading;
   String? get error => _error;
   int get limit => _limit;
   int get currentPage => _currentPage;
+  int get totalPages => _totalPages; // Expose total pages
 
-  // set _currentPage(int _currentPage) {}
   void resetPage() {
     _currentPage = 1;
   }
@@ -47,16 +47,24 @@ class CustomerProvider with ChangeNotifier {
             nestedData.containsKey('data') &&
             nestedData['data'] is List) {
           _customers = nestedData['data'] as List<dynamic>;
+          // Update total pages from backend response
+          _totalPages = nestedData['pages'] ?? 1;
         } else {
           _error =
               'Invalid response format: nested "data" is not a list or missing';
+          _customers = [];
+          _totalPages = 1;
         }
       } else {
         _error =
             'Failed to load customers: ${response.statusCode} - ${response.body}';
+        _customers = [];
+        _totalPages = 1;
       }
     } catch (e) {
       _error = 'Error: $e';
+      _customers = [];
+      _totalPages = 1;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -70,8 +78,10 @@ class CustomerProvider with ChangeNotifier {
   }
 
   void nextPage() {
-    _currentPage++;
-    fetchCustomers();
+    if (_currentPage < _totalPages) {
+      _currentPage++;
+      fetchCustomers();
+    }
   }
 
   void previousPage() {
@@ -96,6 +106,11 @@ class CustomerProvider with ChangeNotifier {
       _error = 'Error: $e';
       notifyListeners();
     }
+  }
+
+  void clearSearch() {
+    _currentPage = 1;
+    fetchCustomers(); // Fetch without query to clear search
   }
 
   @override

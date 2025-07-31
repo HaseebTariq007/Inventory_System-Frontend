@@ -1216,6 +1216,375 @@
 //   }
 // }
 
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+// import '../widgets/custom_nav_bar.dart';
+// import '../state/stock_provider.dart';
+
+// class StockListScreen extends StatefulWidget {
+//   const StockListScreen({Key? key}) : super(key: key);
+
+//   @override
+//   _StockListScreenState createState() => _StockListScreenState();
+// }
+
+// class _StockListScreenState extends State<StockListScreen> {
+//   String? selectedItem;
+//   String? selectedType;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     // Ensure fetchStockData is called after the widget is fully initialized
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       Provider.of<StockProvider>(context, listen: false).fetchStockData();
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final stockProvider = Provider.of<StockProvider>(context);
+
+//     final filteredStock =
+//         stockProvider.stocks.where((stock) {
+//           final matchesItem =
+//               selectedItem == null || stock['item']?['name'] == selectedItem;
+//           final matchesType =
+//               selectedType == null || stock['item']?['type'] == selectedType;
+//           return matchesItem && matchesType;
+//         }).toList();
+
+//     final paginatedStock =
+//         filteredStock
+//             .skip((stockProvider.currentPage - 1) * stockProvider.limit)
+//             .take(stockProvider.limit)
+//             .toList();
+
+//     final itemNames =
+//         stockProvider.stocks
+//             .map((s) => s['item']?['name'] as String?)
+//             .where((name) => name != null)
+//             .cast<String>()
+//             .toSet()
+//             .toList(); // Ensure uniqueness with toSet()
+//     final itemTypes =
+//         selectedItem == null
+//             ? []
+//             : stockProvider.stocks
+//                 .where((s) => s['item']?['name'] == selectedItem)
+//                 .map((s) => s['item']?['type'] as String?)
+//                 .where((type) => type != null)
+//                 .cast<String>()
+//                 .toSet()
+//                 .toList();
+
+//     return Scaffold(
+//       appBar: const CustomNavBar(title: 'Stock List'),
+//       backgroundColor: const Color(0xFFFAF9FB),
+//       body: Column(
+//         children: [
+//           /// Filters
+//           Container(
+//             width: double.infinity,
+//             margin: const EdgeInsets.all(16),
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//               color: Colors.white,
+//               boxShadow: [
+//                 BoxShadow(
+//                   color: Colors.black.withOpacity(0.05),
+//                   blurRadius: 12,
+//                   spreadRadius: 2,
+//                   offset: const Offset(0, 4),
+//                 ),
+//               ],
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Row(
+//               children: [
+//                 SizedBox(
+//                   width: 180,
+//                   child: DropdownButtonFormField<String>(
+//                     value:
+//                         itemNames.contains(selectedItem) ? selectedItem : null,
+//                     hint: const Text('Select Item'),
+//                     decoration: _dropdownDecoration(),
+//                     items:
+//                         itemNames.map((item) {
+//                           return DropdownMenuItem<String>(
+//                             value: item,
+//                             child: Text(item),
+//                           );
+//                         }).toList(),
+//                     onChanged: (value) {
+//                       setState(() {
+//                         selectedItem = value;
+//                         selectedType = null;
+//                         Provider.of<StockProvider>(
+//                           context,
+//                           listen: false,
+//                         ).applyFilters(item: value, type: null);
+//                       });
+//                     },
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 if (selectedItem != null)
+//                   SizedBox(
+//                     width: 180,
+//                     child: DropdownButtonFormField<String>(
+//                       value:
+//                           itemTypes.contains(selectedType)
+//                               ? selectedType
+//                               : null,
+//                       hint: const Text('Select Type'),
+//                       decoration: _dropdownDecoration(),
+//                       items:
+//                           itemTypes.map((type) {
+//                             return DropdownMenuItem<String>(
+//                               value: type,
+//                               child: Text(type),
+//                             );
+//                           }).toList(),
+//                       onChanged: (value) {
+//                         setState(() {
+//                           selectedType = value;
+//                           Provider.of<StockProvider>(
+//                             context,
+//                             listen: false,
+//                           ).applyFilters(item: selectedItem, type: value);
+//                         });
+//                       },
+//                     ),
+//                   ),
+//                 const SizedBox(width: 12),
+//                 ElevatedButton(
+//                   onPressed: () {
+//                     setState(() {
+//                       selectedItem = null;
+//                       selectedType = null;
+//                       Provider.of<StockProvider>(
+//                         context,
+//                         listen: false,
+//                       ).clearFilters();
+//                     });
+//                   },
+//                   style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+//                   child: const Text('Reset'),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 const Icon(Icons.filter_list),
+//                 const SizedBox(width: 4),
+//                 const Text('Filter'),
+//               ],
+//             ),
+//           ),
+
+//           /// Table
+//           Expanded(
+//             child: Center(
+//               child: Container(
+//                 margin: const EdgeInsets.symmetric(vertical: 16),
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: Colors.black.withOpacity(0.08),
+//                       blurRadius: 10,
+//                       spreadRadius: 3,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child:
+//                     stockProvider.isLoading
+//                         ? const Center(child: CircularProgressIndicator())
+//                         : stockProvider.error != null
+//                         ? Center(child: Text(stockProvider.error!))
+//                         : SingleChildScrollView(
+//                           scrollDirection: Axis.horizontal,
+//                           child: SingleChildScrollView(
+//                             child: DataTable(
+//                               headingRowColor: MaterialStateColor.resolveWith(
+//                                 (states) => Colors.grey.shade200,
+//                               ),
+//                               columnSpacing: 30.0,
+//                               columns: [
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 300,
+//                                     child: Text(
+//                                       'Item Name',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 200,
+//                                     child: Text(
+//                                       'Type',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 150,
+//                                     child: Text(
+//                                       'Quantity',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                                 DataColumn(
+//                                   label: SizedBox(
+//                                     width: 200,
+//                                     child: Text(
+//                                       'Unit Price',
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       textAlign: TextAlign.center,
+//                                     ),
+//                                   ),
+//                                 ),
+//                               ],
+//                               rows:
+//                                   paginatedStock.map((stock) {
+//                                     final quantity = stock['quantity'] ?? 0;
+//                                     final unitPrice =
+//                                         quantity != 0
+//                                             ? ((stock['unit_price'] ?? 0)
+//                                                     .toDouble())
+//                                                 .toStringAsFixed(2)
+//                                             : '0.00';
+//                                     return DataRow(
+//                                       cells: [
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 300,
+//                                             child: Text(
+//                                               stock['item']?['name'] ?? '',
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 200,
+//                                             child: Text(
+//                                               stock['item']?['type'] ?? '',
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 150,
+//                                             child: Text(
+//                                               quantity.toString(),
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DataCell(
+//                                           SizedBox(
+//                                             width: 200,
+//                                             child: Text(
+//                                               unitPrice,
+//                                               textAlign: TextAlign.center,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                       ],
+//                                     );
+//                                   }).toList(),
+//                             ),
+//                           ),
+//                         ),
+//               ),
+//             ),
+//           ),
+
+//           /// Pagination
+//           Padding(
+//             padding: const EdgeInsets.all(40.0),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Row(
+//                   children: [
+//                     DropdownButton<int>(
+//                       value: stockProvider.limit,
+//                       items: const [
+//                         DropdownMenuItem(value: 10, child: Text('10')),
+//                         DropdownMenuItem(value: 25, child: Text('25')),
+//                         DropdownMenuItem(value: 50, child: Text('50')),
+//                       ],
+//                       onChanged: (int? newValue) {
+//                         if (newValue != null) {
+//                           stockProvider.changeLimit(newValue);
+//                         }
+//                       },
+//                     ),
+//                     const SizedBox(width: 20),
+//                     ElevatedButton(
+//                       onPressed:
+//                           stockProvider.currentPage > 1
+//                               ? () => stockProvider.previousPage()
+//                               : null,
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: const Color(0xFFF55221),
+//                         foregroundColor: Colors.white,
+//                       ),
+//                       child: const Text('Previous'),
+//                     ),
+//                   ],
+//                 ),
+//                 Text('Page ${stockProvider.currentPage}'),
+//                 ElevatedButton(
+//                   onPressed: () => stockProvider.nextPage(),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: const Color(0xFFF55221),
+//                     foregroundColor: Colors.white,
+//                   ),
+//                   child: const Text('Next'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   InputDecoration _dropdownDecoration() {
+//     return InputDecoration(
+//       filled: true,
+//       fillColor: Colors.grey.shade100,
+//       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+//       border: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(10),
+//         borderSide: BorderSide.none,
+//       ),
+//     );
+//   }
+// }
+
+// Fixed drop down and working filtered code
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/custom_nav_bar.dart';
@@ -1304,19 +1673,28 @@ class _StockListScreenState extends State<StockListScreen> {
               children: [
                 SizedBox(
                   width: 180,
-                  child: DropdownButtonFormField<String>(
-                    value:
-                        itemNames.contains(selectedItem) ? selectedItem : null,
-                    hint: const Text('Select Item'),
-                    decoration: _dropdownDecoration(),
-                    items:
-                        itemNames.map((item) {
-                          return DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(item),
-                          );
-                        }).toList(),
-                    onChanged: (value) {
+                  child: PopupMenuButton<String>(
+                    color: Colors.white,
+                    child: InputDecorator(
+                      decoration: _dropdownDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            selectedItem ?? 'Select Item',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
+                    ),
+                    onSelected: (value) {
                       setState(() {
                         selectedItem = value;
                         selectedType = null;
@@ -1326,27 +1704,54 @@ class _StockListScreenState extends State<StockListScreen> {
                         ).applyFilters(item: value, type: null);
                       });
                     },
+                    itemBuilder:
+                        (BuildContext context) =>
+                            itemNames
+                                .map(
+                                  (item) => PopupMenuItem<String>(
+                                    value: item,
+                                    child: Text(
+                                      item,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                    offset: const Offset(0, 50), // Adjusted to avoid overlap
+                    constraints: const BoxConstraints(
+                      maxHeight: 300, // Limit dropdown height
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 if (selectedItem != null)
                   SizedBox(
                     width: 180,
-                    child: DropdownButtonFormField<String>(
-                      value:
-                          itemTypes.contains(selectedType)
-                              ? selectedType
-                              : null,
-                      hint: const Text('Select Type'),
-                      decoration: _dropdownDecoration(),
-                      items:
-                          itemTypes.map((type) {
-                            return DropdownMenuItem<String>(
-                              value: type,
-                              child: Text(type),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
+                    child: PopupMenuButton<String>(
+                      color: Colors.white,
+                      child: InputDecorator(
+                        decoration: _dropdownDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              selectedType ?? 'Select Type',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              color: Colors.black,
+                            ),
+                          ],
+                        ),
+                      ),
+                      onSelected: (value) {
                         setState(() {
                           selectedType = value;
                           Provider.of<StockProvider>(
@@ -1355,6 +1760,26 @@ class _StockListScreenState extends State<StockListScreen> {
                           ).applyFilters(item: selectedItem, type: value);
                         });
                       },
+                      itemBuilder:
+                          (BuildContext context) =>
+                              itemTypes
+                                  .map(
+                                    (type) => PopupMenuItem<String>(
+                                      value: type,
+                                      child: Text(
+                                        type,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                      offset: const Offset(0, 40), // Adjusted to avoid overlap
+                      constraints: const BoxConstraints(
+                        maxHeight: 200, // Limit dropdown height
+                      ),
                     ),
                   ),
                 const SizedBox(width: 12),
